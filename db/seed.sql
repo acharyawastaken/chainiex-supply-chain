@@ -6,8 +6,8 @@
 -- ── ADMINS ──
 -- Password: admin123 (bcrypt hash, cost 12)
 INSERT INTO admins (username, email, password_hash) VALUES
-  ('admin',    'admin@chainex.in',   '$2b$12$LJ3m4ys1q0VGnKZ9XN0L5O5z8Nz8Nz8Nz8Nz8Nz8Nz8Nz8Nz8N'),
-  ('samarth',  'samarth@chainex.in', '$2b$12$LJ3m4ys1q0VGnKZ9XN0L5O5z8Nz8Nz8Nz8Nz8Nz8Nz8Nz8Nz8N');
+  ('acharya',  'acharya@chainex.in', '$2a$12$AK3JbD0tB6YPg0Wy/Yvy8OChseYyYvVxoXvbrX5D0r6saYPmwDK3S'),
+  ('samarth',  'samarth@chainex.in', '$2a$12$AK3JbD0tB6YPg0Wy/Yvy8OChseYyYvVxoXvbrX5D0r6saYPmwDK3S');
 
 -- ── SUPPLIERS ──
 INSERT INTO suppliers (company_name, contact_email, phone_number, bank_details) VALUES
