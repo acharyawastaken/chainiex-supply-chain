@@ -2,7 +2,7 @@
 
 ## Runtime Dependencies (Node.js)
 - express ^4.21.0          # Web framework
-- mysql2 ^3.11.0           # MySQL driver with connection pooling
+- pg ^8.13.0               # PostgreSQL driver (node-postgres)
 - jsonwebtoken ^9.0.2      # JWT authentication
 - bcryptjs ^2.4.3          # Password hashing (bcrypt)
 - cors ^2.8.5              # Cross-origin resource sharing
@@ -13,11 +13,11 @@
 
 ## System Requirements
 - Node.js >= 20 LTS
-- MySQL >= 8.0 (InnoDB engine)
+- PostgreSQL >= 16.x
 - npm >= 10
 
-## Database Tools (optional but recommended)
-- pgAdmin 4 or MySQL Workbench — for visual DB management
+## Database Tools
+- pgAdmin 4 — for visual PostgreSQL database management
 - Postman — for API testing
 
 ## Quick Install

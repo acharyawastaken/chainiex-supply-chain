@@ -86,7 +86,7 @@ An internal ChaiNIEx system manager.
 | ID | Requirement |
 |----|------------|
 | NFR-01 | API response time < 500ms for standard CRUD operations |
-| NFR-02 | Database must enforce referential integrity (InnoDB engine, FK constraints) |
+| NFR-02 | Database must enforce referential integrity (PostgreSQL FK constraints) |
 | NFR-03 | All data mutations go through parameterized queries (no SQL injection surface) |
 | NFR-04 | Frontend is usable on Chrome, Firefox, and mobile Safari |
 | NFR-05 | System must handle at least 50 concurrent users in demo environment |

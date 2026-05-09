@@ -1,5 +1,5 @@
 -- ============================================
--- ChaiNIEx — Seed Data
+-- ChaiNIEx — Seed Data (PostgreSQL)
 -- Run after schema.sql to populate dev database
 -- ============================================
 

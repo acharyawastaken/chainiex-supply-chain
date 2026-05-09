@@ -1,9 +1,10 @@
 -- ============================================
 -- ChaiNIEx Supply Chain Management System
--- Database Schema (MySQL 8.x / InnoDB)
+-- Database Schema (PostgreSQL 16.x)
 -- ============================================
 -- Migration notes:
 --   v1.0 — Initial schema creation
+--   v1.1 — Migrated from MySQL to PostgreSQL
 
 -- Drop tables in reverse dependency order (for re-runs)
 DROP TABLE IF EXISTS order_items;
@@ -16,17 +17,17 @@ DROP TABLE IF EXISTS users;
 
 -- ── USERS ──
 CREATE TABLE users (
-    user_id          INT PRIMARY KEY AUTO_INCREMENT,
+    user_id          SERIAL PRIMARY KEY,
     full_name        VARCHAR(100)  NOT NULL,
     email            VARCHAR(100)  NOT NULL UNIQUE,
     password_hash    VARCHAR(255)  NOT NULL,
     shipping_address TEXT,
-    created_at       DATETIME      DEFAULT CURRENT_TIMESTAMP
+    created_at       TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ── SUPPLIERS ──
 CREATE TABLE suppliers (
-    supplier_id    INT PRIMARY KEY AUTO_INCREMENT,
+    supplier_id    SERIAL PRIMARY KEY,
     company_name   VARCHAR(150) NOT NULL,
     contact_email  VARCHAR(100) NOT NULL UNIQUE,
     phone_number   VARCHAR(20),
@@ -35,7 +36,7 @@ CREATE TABLE suppliers (
 
 -- ── ADMINS ──
 CREATE TABLE admins (
-    admin_id      INT PRIMARY KEY AUTO_INCREMENT,
+    admin_id      SERIAL PRIMARY KEY,
     username      VARCHAR(50)  NOT NULL UNIQUE,
     email         VARCHAR(100) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL
@@ -43,13 +44,13 @@ CREATE TABLE admins (
 
 -- ── CATEGORIES ──
 CREATE TABLE categories (
-    category_id   INT PRIMARY KEY AUTO_INCREMENT,
+    category_id   SERIAL PRIMARY KEY,
     category_name VARCHAR(50) NOT NULL
 );
 
 -- ── PRODUCTS ──
 CREATE TABLE products (
-    product_id     INT PRIMARY KEY AUTO_INCREMENT,
+    product_id     SERIAL PRIMARY KEY,
     supplier_id    INT            NOT NULL,
     category_id    INT            NOT NULL,
     product_name   VARCHAR(200)   NOT NULL,
@@ -62,9 +63,9 @@ CREATE TABLE products (
 
 -- ── ORDERS ──
 CREATE TABLE orders (
-    order_id     INT PRIMARY KEY AUTO_INCREMENT,
+    order_id     SERIAL PRIMARY KEY,
     user_id      INT            NOT NULL,
-    order_date   DATETIME       DEFAULT CURRENT_TIMESTAMP,
+    order_date   TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
     total_amount DECIMAL(10,2)  NOT NULL,
     status       VARCHAR(50)    NOT NULL DEFAULT 'Pending',
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
@@ -72,7 +73,7 @@ CREATE TABLE orders (
 
 -- ── ORDER ITEMS ──
 CREATE TABLE order_items (
-    order_item_id     INT PRIMARY KEY AUTO_INCREMENT,
+    order_item_id     SERIAL PRIMARY KEY,
     order_id          INT           NOT NULL,
     product_id        INT           NOT NULL,
     quantity          INT           NOT NULL,

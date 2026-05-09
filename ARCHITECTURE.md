@@ -2,7 +2,7 @@
 
 ## Overview
 
-Three-tier architecture: a React/HTML frontend, a Node.js REST API, and a MySQL 8.x database. All three are containerized and deployable as a single `docker compose up`.
+Three-tier architecture: a React/HTML frontend, a Node.js REST API, and a PostgreSQL 16.x database. All three are containerized and deployable as a single `docker compose up`.
 
 ```
 ┌──────────────────────────────────────────────────────┐
@@ -17,11 +17,11 @@ Three-tier architecture: a React/HTML frontend, a Node.js REST API, and a MySQL 
 │   Auth: JWT (users/suppliers) + Session (admins)     │
 │   Middleware: validation · error handling · logging  │
 └────────────────────┬─────────────────────────────────┘
-                     │ mysql2 connection pool
+                     │ pg connection pool
 ┌────────────────────▼─────────────────────────────────┐
 │                  DATABASE LAYER                       │
-│   MySQL 8.x                                          │
-│   Engine: InnoDB (FK enforcement + transactions)     │
+│   PostgreSQL 16.x                                    │
+│   FK enforcement + transactions + MVCC              │
 └──────────────────────────────────────────────────────┘
 ```
 
@@ -41,20 +41,20 @@ Categories ──(in_category)────────────────�
 Admins ──(manages)──► Categories
 ```
 
-### Table Definitions (MySQL DDL)
+### Table Definitions (PostgreSQL DDL)
 
 ```sql
 CREATE TABLE users (
-    user_id          INT PRIMARY KEY AUTO_INCREMENT,
+    user_id          SERIAL PRIMARY KEY,
     full_name        VARCHAR(100)  NOT NULL,
     email            VARCHAR(100)  NOT NULL UNIQUE,
     password_hash    VARCHAR(255)  NOT NULL,
     shipping_address TEXT,
-    created_at       DATETIME      DEFAULT CURRENT_TIMESTAMP
+    created_at       TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE suppliers (
-    supplier_id    INT PRIMARY KEY AUTO_INCREMENT,
+    supplier_id    SERIAL PRIMARY KEY,
     company_name   VARCHAR(150) NOT NULL,
     contact_email  VARCHAR(100) NOT NULL UNIQUE,
     phone_number   VARCHAR(20),
@@ -62,19 +62,19 @@ CREATE TABLE suppliers (
 );
 
 CREATE TABLE admins (
-    admin_id      INT PRIMARY KEY AUTO_INCREMENT,
+    admin_id      SERIAL PRIMARY KEY,
     username      VARCHAR(50)  NOT NULL UNIQUE,
     email         VARCHAR(100) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE categories (
-    category_id   INT PRIMARY KEY AUTO_INCREMENT,
+    category_id   SERIAL PRIMARY KEY,
     category_name VARCHAR(50) NOT NULL
 );
 
 CREATE TABLE products (
-    product_id     INT PRIMARY KEY AUTO_INCREMENT,
+    product_id     SERIAL PRIMARY KEY,
     supplier_id    INT            NOT NULL,
     category_id    INT            NOT NULL,
     product_name   VARCHAR(200)   NOT NULL,
@@ -86,16 +86,16 @@ CREATE TABLE products (
 );
 
 CREATE TABLE orders (
-    order_id     INT PRIMARY KEY AUTO_INCREMENT,
+    order_id     SERIAL PRIMARY KEY,
     user_id      INT            NOT NULL,
-    order_date   DATETIME       DEFAULT CURRENT_TIMESTAMP,
+    order_date   TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
     total_amount DECIMAL(10,2)  NOT NULL,
     status       VARCHAR(50)    NOT NULL DEFAULT 'Pending',
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
 CREATE TABLE order_items (
-    order_item_id     INT PRIMARY KEY AUTO_INCREMENT,
+    order_item_id     SERIAL PRIMARY KEY,
     order_id          INT           NOT NULL,
     product_id        INT           NOT NULL,
     quantity          INT           NOT NULL,
@@ -111,6 +111,7 @@ CREATE TABLE order_items (
 CREATE INDEX idx_products_supplier  ON products(supplier_id);
 CREATE INDEX idx_products_category  ON products(category_id);
 CREATE INDEX idx_orders_user        ON orders(user_id);
+CREATE INDEX idx_orders_status      ON orders(status);
 CREATE INDEX idx_order_items_order  ON order_items(order_id);
 CREATE INDEX idx_order_items_product ON order_items(product_id);
 ```
@@ -120,16 +121,16 @@ CREATE INDEX idx_order_items_product ON order_items(product_id);
 All order writes happen inside a single transaction to prevent stock inconsistency:
 
 ```sql
-START TRANSACTION;
+BEGIN;
   -- 1. Lock the product rows being purchased
-  SELECT stock_quantity FROM products WHERE product_id = ? FOR UPDATE;
+  SELECT stock_quantity FROM products WHERE product_id = $1 FOR UPDATE;
   -- 2. Verify sufficient stock, else ROLLBACK
   -- 3. Insert into orders
-  INSERT INTO orders (user_id, total_amount, status) VALUES (?, ?, 'Pending');
+  INSERT INTO orders (user_id, total_amount, status) VALUES ($1, $2, 'Pending') RETURNING order_id;
   -- 4. Insert each order_item
-  INSERT INTO order_items (order_id, product_id, quantity, price_at_purchase) VALUES ...;
+  INSERT INTO order_items (order_id, product_id, quantity, price_at_purchase) VALUES ($1, $2, $3, $4);
   -- 5. Decrement stock
-  UPDATE products SET stock_quantity = stock_quantity - ? WHERE product_id = ?;
+  UPDATE products SET stock_quantity = stock_quantity - $1 WHERE product_id = $2;
 COMMIT;
 ```
 
@@ -170,13 +171,13 @@ Authentication middleware checks JWT on all protected routes. Admin routes requi
 
 | Layer | Technology | Version |
 |-------|-----------|---------|
-| Database | MySQL | 8.x |
-| ORM / Driver | mysql2 (Node.js) | latest |
+| Database | PostgreSQL | 16.x |
+| DB Driver | pg (node-postgres) | latest |
 | Backend | Node.js + Express | 20 LTS |
-| Auth | jsonwebtoken + bcrypt | latest |
+| Auth | jsonwebtoken + bcryptjs | latest |
 | Frontend | React (Vite) or plain HTML+JS | — |
 | Containerization | Docker + docker-compose | latest |
-| Dev Tools | MySQL Workbench, Postman | — |
+| Dev Tools | pgAdmin 4, Postman | — |
 
 ---
 
@@ -185,21 +186,23 @@ Authentication middleware checks JWT on all protected routes. Admin routes requi
 ```yaml
 services:
   db:
-    image: mysql:8
+    image: postgres:16
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: chainex_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: chainex_db
     volumes:
       - ./db/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
       - ./db/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql
-    ports: ["3306:3306"]
+    ports: ["5432:5432"]
 
   api:
     build: ./api
     environment:
       DB_HOST: db
-      DB_USER: root
-      DB_PASS: root
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASS: postgres
       DB_NAME: chainex_db
       JWT_SECRET: changeme
     ports: ["4000:4000"]
@@ -217,6 +220,6 @@ services:
 
 - All passwords stored as bcrypt hashes (cost factor 12)
 - JWT expiry: 24h (users), 8h (admins)
-- SQL queries use parameterized statements — no string concatenation
+- SQL queries use parameterized statements ($1, $2, ...) — no string concatenation
 - `bank_details` in Suppliers should be encrypted at rest (AES-256) before production
 - HTTPS enforced in production via reverse proxy (nginx)

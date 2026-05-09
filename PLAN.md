@@ -19,7 +19,7 @@
 
 ### Phase 0 — Foundation (Week 1)
 - [ ] Finalize and lock schema (see `ARCHITECTURE.md`)
-- [ ] Set up local MySQL instance and run initial migrations
+- [ ] Set up local PostgreSQL instance and run initial migrations
 - [ ] Configure version control (Git repo, branching strategy)
 - [ ] Agree on coding standards and folder structure (see `CLAUDE.md`)
 
@@ -49,7 +49,7 @@
 - [ ] SQL query performance checks (add indexes where needed)
 
 ### Phase 5 — Deployment (Week 5–6)
-- [ ] Containerize with Docker (MySQL + API + frontend)
+- [ ] Containerize with Docker (PostgreSQL + API + frontend)
 - [ ] Deploy on a cloud VM or Railway/Render (free tier acceptable for demo)
 - [ ] Set up automated DB backups
 - [ ] Final documentation and demo prep
@@ -76,7 +76,7 @@
 | Stock race conditions on concurrent orders | Medium | Use `SELECT ... FOR UPDATE` transactions |
 | Schema changes mid-development | Low | Lock schema in Phase 0; use migration files |
 | Scope creep (payments, analytics) | Medium | Defer to post-MVP; see `MVP.md` |
-| MySQL version incompatibility | Low | Pin MySQL 8.x in Docker |
+| PostgreSQL version incompatibility | Low | Pin PostgreSQL 16.x in Docker |
 
 ---
 

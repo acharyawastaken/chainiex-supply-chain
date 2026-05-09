@@ -1,6 +1,6 @@
 # ChaiNIEx — MVP Definition
 
-**The MVP is complete when a person can sign up, browse products, place an order, and an admin can manage that order — all backed by a live MySQL database.**
+**The MVP is complete when a person can sign up, browse products, place an order, and an admin can manage that order — all backed by a live PostgreSQL database.**
 
 ---
 
@@ -119,7 +119,7 @@ chainex/
 ## Definition of Done
 
 A feature is "done" when:
-1. The database layer works (query verified in MySQL Workbench)
+1. The database layer works (query verified in pgAdmin or psql)
 2. The API endpoint returns correct data (verified in Postman)
 3. The frontend displays it correctly (verified in browser)
 4. An error case is handled gracefully (bad input → clear error message)

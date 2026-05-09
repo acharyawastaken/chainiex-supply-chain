@@ -1,30 +1,26 @@
 // ─────────────────────────────────────────────
-// MySQL Connection Pool (mysql2)
+// PostgreSQL Connection Pool (pg)
 // ─────────────────────────────────────────────
 require('dotenv').config({ path: '../.env' });
-const mysql = require('mysql2/promise');
+const { Pool } = require('pg');
 
-const pool = mysql.createPool({
+const pool = new Pool({
   host:     process.env.DB_HOST || 'localhost',
-  port:     parseInt(process.env.DB_PORT || '3306', 10),
-  user:     process.env.DB_USER || 'root',
-  password: process.env.DB_PASS || 'root',
+  port:     parseInt(process.env.DB_PORT || '5432', 10),
+  user:     process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASS || 'postgres',
   database: process.env.DB_NAME || 'chainex_db',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-  // Return dates as strings, not JS Date objects
-  dateStrings: true
+  max:      10, // connection pool size
+  idleTimeoutMillis: 30000,
 });
 
 // Quick connectivity check on startup
-pool.getConnection()
-  .then(conn => {
-    console.log('✅ MySQL pool connected to', process.env.DB_NAME || 'chainex_db');
-    conn.release();
+pool.query('SELECT NOW()')
+  .then(() => {
+    console.log('✅ PostgreSQL pool connected to', process.env.DB_NAME || 'chainex_db');
   })
   .catch(err => {
-    console.error('❌ MySQL connection failed:', err.message);
+    console.error('❌ PostgreSQL connection failed:', err.message);
   });
 
 module.exports = pool;
