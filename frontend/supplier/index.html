@@ -247,7 +247,6 @@ select.fi{appearance:none;cursor:pointer}
       Sign In
     </button>
     <div style="text-align:center;margin-top:12px;font-size:12px;color:var(--muted)">
-      <a href="/" style="color:var(--accent);text-decoration:none">← Back to Shop</a>
     </div>
   </div>
 </div>
@@ -307,11 +306,6 @@ select.fi{appearance:none;cursor:pointer}
     <div class="sep"></div>
     <span class="topbar-crumb" id="topbar-crumb">Overview</span>
     <div class="topbar-right">
-      <div class="pnav">
-        <a href="/">Shop</a>
-        <a href="/supplier" class="cur">Delivery</a>
-        <a href="/admin">Admin</a>
-      </div>
       <div id="status-toggle" style="display:flex;align-items:center;gap:8px">
         <span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted)">Status:</span>
         <select class="status-sel" id="my-status" onchange="updateMyStatus(this.value)">
@@ -608,15 +602,9 @@ async function doLogin() {
     localStorage.setItem('chainex_delivery_token', token);
     localStorage.setItem('chainex_delivery_name', r.full_name || email.split('@')[0]);
     checkAuth();
-    showToast('Welcome back!');
+    showToast(`Welcome, ${r.full_name || email.split('@')[0]}!`);
   } else {
-    // Demo: accept any credentials for delivery portal
-    token = 'demo_delivery_token';
-    localStorage.setItem('chainex_delivery_token', token);
-    const dname = email.split('@')[0] || 'Delivery Partner';
-    localStorage.setItem('chainex_delivery_name', dname);
-    checkAuth();
-    showToast('Signed in (demo mode)');
+    showToast(r?.error || 'Invalid credentials', 'err');
   }
 }
 

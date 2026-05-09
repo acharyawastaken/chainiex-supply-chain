@@ -174,6 +174,21 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
 
 /* tab panels */
 .tab-panel{display:none} .tab-panel.active{display:block}
+
+/* ORDER DETAIL EXPAND */
+.order-card{cursor:pointer;transition:border-color .2s}
+.order-card:hover{border-color:var(--border-h)}
+.order-items-detail{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.order-card.expanded .order-items-detail{display:block}
+.oid-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.oid-row:last-child{border-bottom:none}
+.oid-name{font-weight:500;font-size:13px}
+.oid-qty{color:var(--muted);font-size:12px;margin-left:6px}
+.oid-price{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--accent)}
+.oid-subtotal{font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:500}
+.oid-hint{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:6px;text-align:center}
+.order-card.expanded .oid-hint{display:none}
+
 @media(max-width:640px){
   .content{padding:16px}
   .products-grid{grid-template-columns:repeat(2,1fr)}
@@ -195,11 +210,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
     <button class="pill active" onclick="filterCat(0,this)">All</button>
   </div>
   <div class="nav-right">
-    <div class="pnav">
-      <a href="/" class="cur">Shop</a>
-      <a href="/supplier">Delivery</a>
-      <a href="/admin">Admin</a>
-    </div>
+    <span id="user-greeting" style="font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace;display:none"></span>
     <button class="btn btn-o btn-sm" onclick="openLogin()" id="login-btn">Login</button>
     <button class="btn btn-g btn-sm" onclick="logout()" id="logout-btn" style="display:none">Logout</button>
     <button class="btn btn-o cart-btn" onclick="openCart()" id="cart-btn">
@@ -400,6 +411,7 @@ function saveAuth(r) {
   token = r.token; userId = r.user_id;
   localStorage.setItem('chainex_token', token);
   localStorage.setItem('chainex_uid', userId);
+  localStorage.setItem('chainex_name', r.full_name || '');
   updateAuthUI();
 }
 
@@ -407,12 +419,21 @@ function updateAuthUI() {
   const loggedIn = !!token;
   q('login-btn').style.display  = loggedIn ? 'none' : 'inline-flex';
   q('logout-btn').style.display = loggedIn ? 'inline-flex' : 'none';
+  const greeting = q('user-greeting');
+  const name = localStorage.getItem('chainex_name');
+  if (loggedIn && name) {
+    greeting.textContent = `Hi, ${name}`;
+    greeting.style.display = 'inline';
+  } else {
+    greeting.style.display = 'none';
+  }
 }
 
 function logout() {
   token=''; userId=null;
   localStorage.removeItem('chainex_token');
   localStorage.removeItem('chainex_uid');
+  localStorage.removeItem('chainex_name');
   updateAuthUI();
   showToast('Logged out');
 }
@@ -585,7 +606,7 @@ async function loadOrders() {
   q('orders-list-wrap').innerHTML = `<div class="orders-list">${orders.map(o=>{
     const bMap={Pending:'b-pending',Processing:'b-processing',Shipped:'b-shipped',Delivered:'b-delivered',Cancelled:'b-cancelled'};
     return `
-    <div class="order-card">
+    <div class="order-card" onclick="toggleOrderDetail(this, ${o.order_id})">
       <div class="cp tl">${PLUS}</div><div class="cp tr">${PLUS}</div>
       <div class="cp bl">${PLUS}</div><div class="cp br">${PLUS}</div>
       <div class="order-head">
@@ -594,10 +615,9 @@ async function loadOrders() {
         <span class="order-date">${fmtDate(o.order_date)}</span>
         <span class="order-total">${fmt(o.total_amount)}</span>
       </div>
-      ${o.items ? `<div class="order-items-list">
-        ${o.items.map(i=>`<span class="order-item-chip">${i.product_name} ×${i.quantity}</span>`).join('')}
-      </div>` : ''}
-      ${o.status==='Pending'?`<button class="btn btn-o btn-sm order-cancel-btn" onclick="cancelOrder(${o.order_id})">Cancel Order</button>`:''}
+      <div class="oid-hint">Click to view items</div>
+      <div class="order-items-detail" id="oid-${o.order_id}"><div style="color:var(--muted);font-size:12px;padding:8px 0">Loading…</div></div>
+      ${o.status==='Pending'?`<button class="btn btn-o btn-sm order-cancel-btn" onclick="event.stopPropagation();cancelOrder(${o.order_id})">Cancel Order</button>`:''}
     </div>`;
   }).join('')}</div>`;
 }
@@ -607,6 +627,32 @@ async function cancelOrder(orderId) {
   const r = await apiFetch(`/orders/${orderId}`,{method:'PATCH',body:JSON.stringify({status:'Cancelled'})});
   if (r) { showToast('Order cancelled'); loadOrders(); }
   else showToast('Could not cancel','err');
+}
+
+async function toggleOrderDetail(el, orderId) {
+  if (el.classList.contains('expanded')) {
+    el.classList.remove('expanded');
+    return;
+  }
+  el.classList.add('expanded');
+  const container = document.getElementById(`oid-${orderId}`);
+  if (container.dataset.loaded) return;
+  try {
+    const r = await apiFetch(`/orders/${orderId}`);
+    if (!r) throw new Error('Failed');
+    const o = r.data || r;
+    const items = o.items || [];
+    container.innerHTML = items.length ? items.map(i => {
+      const sub = parseFloat(i.price_at_purchase) * i.quantity;
+      return `<div class="oid-row">
+        <div><span class="oid-name">${i.product_name || 'Product #'+i.product_id}</span><span class="oid-qty">× ${i.quantity}</span></div>
+        <div style="text-align:right"><div class="oid-price">₹${parseFloat(i.price_at_purchase).toFixed(2)} each</div><div class="oid-subtotal">₹${sub.toFixed(2)}</div></div>
+      </div>`;
+    }).join('') : '<div style="color:var(--muted);font-size:12px;padding:8px 0">No items found</div>';
+    container.dataset.loaded = '1';
+  } catch(e) {
+    container.innerHTML = '<div style="color:#e87878;font-size:12px;padding:8px 0">Failed to load items</div>';
+  }
 }
 
 // ─── MOCK DATA ───
