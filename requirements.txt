@@ -1,0 +1,27 @@
+# ChaiNIEx — Requirements
+
+## Runtime Dependencies (Node.js)
+- express ^4.21.0          # Web framework
+- mysql2 ^3.11.0           # MySQL driver with connection pooling
+- jsonwebtoken ^9.0.2      # JWT authentication
+- bcryptjs ^2.4.3          # Password hashing (bcrypt)
+- cors ^2.8.5              # Cross-origin resource sharing
+- dotenv ^16.4.5           # Environment variable loading
+
+## Dev Dependencies
+- nodemon ^3.1.4           # Auto-restart on file changes
+
+## System Requirements
+- Node.js >= 20 LTS
+- MySQL >= 8.0 (InnoDB engine)
+- npm >= 10
+
+## Database Tools (optional but recommended)
+- pgAdmin 4 or MySQL Workbench — for visual DB management
+- Postman — for API testing
+
+## Quick Install
+```bash
+cd api
+npm install
+```

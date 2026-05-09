@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChaiNIEx · Shop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0907;--surface:#141210;--surface-2:#1c1916;--border:rgba(255,255,255,.09);
+  --border-h:rgba(255,255,255,.18);--accent:#c8923a;--accent-d:rgba(200,146,58,.15);
+  --text:#f4ede0;--muted:#6e6254;--r:12px;--rs:7px;
+  --s-txt:#7ecf9a;--w-txt:#f0a84d;--d-txt:#e87878;--i-txt:#6ab4f0;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{color-scheme:dark}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;font-size:14px;line-height:1.6;min-height:100vh}
+::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border-h);border-radius:4px}
+
+/* NAV */
+.nav{display:flex;align-items:center;padding:0 32px;height:58px;border-bottom:1px solid var(--border);background:rgba(10,9,7,.9);backdrop-filter:blur(12px);position:sticky;top:0;z-index:50;gap:16px}
+.nav-logo{display:flex;align-items:center;gap:9px;text-decoration:none}
+.nav-icon{width:28px;height:28px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:12px;font-weight:700;color:#0a0806;flex-shrink:0}
+.nav-brand{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;letter-spacing:-.02em;color:var(--text)}
+.nav-sep{width:1px;height:16px;background:var(--border);flex-shrink:0}
+/* category pills */
+.cat-pills{display:flex;gap:6px;overflow-x:auto;flex:1;scrollbar-width:none}
+.cat-pills::-webkit-scrollbar{display:none}
+.pill{display:inline-flex;align-items:center;padding:5px 13px;border-radius:999px;font-size:12px;font-family:'JetBrains Mono',monospace;cursor:pointer;border:1px solid var(--border);color:var(--muted);background:transparent;white-space:nowrap;transition:all .15s}
+.pill:hover{border-color:var(--border-h);color:var(--text)}
+.pill.active{background:var(--accent-d);color:var(--accent);border-color:rgba(200,146,58,.3)}
+/* nav right */
+.nav-right{display:flex;align-items:center;gap:8px;margin-left:auto}
+.pnav{display:flex;gap:4px}
+.pnav a{font-size:11px;color:var(--muted);text-decoration:none;padding:4px 9px;border-radius:var(--rs);border:1px solid transparent;font-family:'JetBrains Mono',monospace;transition:all .15s}
+.pnav a:hover{color:var(--text);border-color:var(--border)}
+.pnav a.cur{color:var(--accent);border-color:rgba(200,146,58,.25)}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .15s;color:var(--text);background:transparent}
+.btn svg{width:13px;height:13px}
+.btn-p{background:var(--accent);color:#0a0806;border-color:var(--accent)}
+.btn-p:hover{opacity:.88}
+.btn-o{border-color:var(--border-h)}
+.btn-o:hover{background:rgba(255,255,255,.05)}
+.btn-g{color:var(--muted)}
+.btn-g:hover{color:var(--text);background:rgba(255,255,255,.04)}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-full{width:100%;justify-content:center}
+/* cart button with badge */
+.cart-btn{position:relative}
+.cart-count{position:absolute;top:-4px;right:-5px;background:var(--accent);color:#0a0806;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;padding:1px 4px;border-radius:999px;min-width:16px;text-align:center;display:none}
+.cart-count.show{display:block}
+
+/* MAIN */
+.main-wrap{display:flex;min-height:calc(100vh - 58px)}
+.content{flex:1;padding:28px 32px;max-width:1200px}
+
+/* HERO */
+.hero{margin-bottom:32px;padding:32px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);position:relative;overflow:hidden;animation:fadeUp .5s ease}
+.hero::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:32px 32px;mask-image:radial-gradient(ellipse at center,transparent 20%,black 80%);-webkit-mask-image:radial-gradient(ellipse at center,transparent 20%,black 80%);pointer-events:none}
+.hero-label{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--accent);text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px;border:1px solid rgba(200,146,58,.25);background:var(--accent-d);padding:3px 9px;border-radius:999px;display:inline-block}
+.hero-title{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;letter-spacing:-.04em;line-height:1.1;margin-bottom:8px}
+.hero-title em{color:var(--accent);font-style:normal}
+.hero-sub{font-size:14px;color:var(--muted);max-width:420px}
+/* corner plus */
+.cp{position:absolute;color:var(--border-h);width:11px;height:11px}
+.cp svg{width:11px;height:11px}
+.cp.tl{top:-5px;left:-5px}.cp.tr{top:-5px;right:-5px}.cp.bl{bottom:-5px;left:-5px}.cp.br{bottom:-5px;right:-5px}
+.PLUS=`<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg>`
+
+/* TAB BAR */
+.tab-bar{display:flex;gap:2px;margin-bottom:22px;border-bottom:1px solid var(--border);padding-bottom:-1px}
+.tab{padding:8px 16px;font-size:13.5px;font-weight:500;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab:hover:not(.active){color:var(--text)}
+
+/* PRODUCT GRID */
+.products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.prod-card{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;cursor:pointer;transition:border-color .2s,transform .2s;animation:fadeUp .4s ease both;overflow:visible}
+.prod-card:hover{border-color:rgba(200,146,58,.3);transform:translateY(-2px)}
+.prod-card:nth-child(1){animation-delay:.05s}.prod-card:nth-child(2){animation-delay:.1s}
+.prod-card:nth-child(3){animation-delay:.13s}.prod-card:nth-child(4){animation-delay:.16s}
+.prod-card:nth-child(5){animation-delay:.19s}.prod-card:nth-child(6){animation-delay:.22s}
+/* featured card gets border trail */
+.prod-card.featured{border-color:rgba(200,146,58,.2);overflow:hidden}
+.prod-card.featured .trail-dot{position:absolute;width:60px;height:60px;background:radial-gradient(circle,var(--accent) 0%,transparent 70%);border-radius:50%;offset-path:rect(0px 100% 100% 0px round 12px);animation:orbit 3s linear infinite;pointer-events:none;filter:blur(9px);opacity:.55}
+@keyframes orbit{from{offset-distance:0%}to{offset-distance:100%}}
+.prod-img{width:100%;aspect-ratio:1;background:var(--surface-2);border-radius:8px;margin-bottom:14px;display:flex;align-items:center;justify-content:center;font-size:32px;border:1px solid var(--border)}
+.prod-cat{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px}
+.prod-name{font-size:14px;font-weight:500;color:var(--text);margin-bottom:8px;line-height:1.3}
+.prod-price{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:500;color:var(--text)}
+.prod-price .unit{font-size:12px;color:var(--muted);font-weight:400}
+.prod-stock{font-size:11px;color:var(--muted);margin-top:4px;font-family:'JetBrains Mono',monospace}
+.prod-stock.low{color:var(--d-txt)}
+.prod-add{margin-top:14px;width:100%;justify-content:center}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:999px;font-size:10.5px;font-family:'JetBrains Mono',monospace;font-weight:500;border:1px solid transparent}
+.badge::before{content:'';width:4px;height:4px;border-radius:50%;background:currentColor}
+.b-pending{background:rgba(240,168,77,.1);color:var(--w-txt);border-color:rgba(240,168,77,.2)}
+.b-shipped{background:rgba(106,180,240,.1);color:var(--i-txt);border-color:rgba(106,180,240,.2)}
+.b-delivered{background:rgba(126,207,154,.1);color:var(--s-txt);border-color:rgba(126,207,154,.2)}
+.b-cancelled{background:rgba(232,120,120,.1);color:var(--d-txt);border-color:rgba(232,120,120,.2)}
+.b-processing{background:rgba(138,100,230,.1);color:#b79cef;border-color:rgba(138,100,230,.2)}
+
+/* CART DRAWER */
+.cart-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:40;display:none;backdrop-filter:blur(4px)}
+.cart-overlay.open{display:block}
+.cart-drawer{position:fixed;right:0;top:0;bottom:0;width:380px;background:var(--surface-2);border-left:1px solid var(--border-h);z-index:50;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s ease}
+.cart-drawer.open{transform:translateX(0)}
+.cart-head{display:flex;align-items:center;padding:20px 22px;border-bottom:1px solid var(--border);gap:10px}
+.cart-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:600;flex:1}
+.cart-body{flex:1;overflow-y:auto;padding:16px 22px}
+.cart-empty{text-align:center;padding:48px 0;color:var(--muted);font-size:13px}
+.cart-empty svg{width:36px;height:36px;margin:0 auto 12px;display:block;opacity:.3}
+.cart-item{display:flex;align-items:flex-start;gap:12px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.cart-item:last-child{border-bottom:none}
+.ci-icon{width:42px;height:42px;background:var(--surface);border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.ci-info{flex:1;min-width:0}
+.ci-name{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px}
+.ci-price{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)}
+.ci-qty{display:flex;align-items:center;gap:8px;margin-top:8px}
+.qty-btn{width:22px;height:22px;border:1px solid var(--border);border-radius:5px;background:var(--surface);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;transition:background .1s}
+.qty-btn:hover{background:rgba(255,255,255,.07)}
+.qty-val{font-family:'JetBrains Mono',monospace;font-size:12px;min-width:20px;text-align:center}
+.ci-remove{margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;transition:color .1s}
+.ci-remove:hover{color:var(--d-txt)}
+.ci-remove svg{width:13px;height:13px}
+.cart-footer{padding:20px 22px;border-top:1px solid var(--border)}
+.cart-total-row{display:flex;justify-content:space-between;margin-bottom:14px;font-size:13px}
+.cart-total-row .label{color:var(--muted)}
+.cart-total-row .val{font-family:'JetBrains Mono',monospace;font-weight:500}
+
+/* ORDERS SECTION */
+.orders-list{display:flex;flex-direction:column;gap:12px}
+.order-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;position:relative;overflow:visible;animation:fadeUp .4s ease both}
+.order-card .cp{color:var(--border-h);width:11px;height:11px}
+.order-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.order-id{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)}
+.order-date{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)}
+.order-total{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:500;margin-left:auto}
+.order-items-list{display:flex;flex-wrap:wrap;gap:6px}
+.order-item-chip{font-size:11px;background:var(--surface-2);border:1px solid var(--border);border-radius:5px;padding:3px 8px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.order-cancel-btn{margin-top:12px}
+
+/* LOGIN MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:var(--surface-2);border:1px solid var(--border-h);border-radius:16px;width:min(420px,92vw);padding:28px;animation:fadeUp .2s ease;position:relative}
+.modal-brand{display:flex;align-items:center;gap:8px;margin-bottom:20px}
+.modal-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;margin-bottom:4px}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:22px}
+.fg{margin-bottom:13px}
+.fl{display:block;font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.fi{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 11px;transition:border-color .15s}
+.fi:focus{outline:none;border-color:var(--accent)}
+.fi::placeholder{color:var(--muted)}
+.modal-switch{font-size:12.5px;color:var(--muted);text-align:center;margin-top:14px}
+.modal-switch a{color:var(--accent);cursor:pointer;text-decoration:none}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--surface-2);border:1px solid var(--border-h);border-radius:var(--r);padding:11px 15px;font-size:13px;color:var(--text);z-index:200;display:none;align-items:center;gap:8px;animation:fadeUp .2s ease}
+.toast.show{display:flex}
+.toast.ok{border-color:rgba(126,207,154,.3)}
+.toast.err{border-color:rgba(232,120,120,.3)}
+
+/* EMPTY / LOADING */
+.empty-state{padding:50px;text-align:center;color:var(--muted)}
+.empty-state svg{width:36px;height:36px;margin:0 auto 12px;display:block;opacity:.3}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* tab panels */
+.tab-panel{display:none} .tab-panel.active{display:block}
+@media(max-width:640px){
+  .content{padding:16px}
+  .products-grid{grid-template-columns:repeat(2,1fr)}
+  .cart-drawer{width:100%}
+  .nav{padding:0 16px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a class="nav-logo" href="../customer/index.html">
+    <div class="nav-icon">Cx</div>
+    <span class="nav-brand">ChaiNIEx</span>
+  </a>
+  <div class="nav-sep"></div>
+  <div class="cat-pills" id="cat-pills">
+    <button class="pill active" onclick="filterCat(0,this)">All</button>
+  </div>
+  <div class="nav-right">
+    <div class="pnav">
+      <a href="../customer/index.html" class="cur">Shop</a>
+      <a href="../supplier/index.html">Delivery</a>
+      <a href="../admin/index.html">Admin</a>
+    </div>
+    <button class="btn btn-o btn-sm" onclick="openLogin()" id="login-btn">Login</button>
+    <button class="btn btn-g btn-sm" onclick="logout()" id="logout-btn" style="display:none">Logout</button>
+    <button class="btn btn-o cart-btn" onclick="openCart()" id="cart-btn">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      Cart
+      <span class="cart-count" id="cart-count">0</span>
+    </button>
+  </div>
+</nav>
+
+<!-- CONTENT -->
+<div class="main-wrap">
+<div class="content">
+
+  <!-- HERO -->
+  <div class="hero" style="position:relative">
+    <div class="cp tl"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg></div>
+    <div class="cp tr"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg></div>
+    <div class="cp bl"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg></div>
+    <div class="cp br"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg></div>
+    <div class="hero-label">🍵 ChaiNIEx Market</div>
+    <div class="hero-title">Premium teas,<br><em>direct from estates</em></div>
+    <div class="hero-sub">Discover rare single-origin teas sourced directly from Nilgiri, Darjeeling, and Assam estates.</div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tab-bar">
+    <div class="tab active" onclick="switchTab('shop',this)">Shop</div>
+    <div class="tab" onclick="switchTab('orders',this)" id="orders-tab">My Orders</div>
+  </div>
+
+  <!-- SHOP TAB -->
+  <div class="tab-panel active" id="tab-shop">
+    <div class="products-grid" id="products-grid">
+      <div class="empty-state" style="grid-column:1/-1">
+        <svg fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+        Loading products…
+      </div>
+    </div>
+  </div>
+
+  <!-- ORDERS TAB -->
+  <div class="tab-panel" id="tab-orders">
+    <div id="orders-list-wrap">
+      <div class="empty-state">
+        <svg fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"/></svg>
+        Login to see your orders
+      </div>
+    </div>
+  </div>
+
+</div><!-- /content -->
+</div><!-- /main-wrap -->
+
+<!-- CART OVERLAY + DRAWER -->
+<div class="cart-overlay" id="cart-overlay" onclick="closeCart()"></div>
+<div class="cart-drawer" id="cart-drawer">
+  <div class="cart-head">
+    <div class="cart-title">Your Cart</div>
+    <span id="cart-item-count" style="font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace">0 items</span>
+    <button class="btn btn-g btn-sm" onclick="closeCart()">✕</button>
+  </div>
+  <div class="cart-body" id="cart-body">
+    <div class="cart-empty">
+      <svg fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      Your cart is empty
+    </div>
+  </div>
+  <div class="cart-footer" id="cart-footer" style="display:none">
+    <div class="cart-total-row">
+      <span class="label">Subtotal</span>
+      <span class="val" id="cart-subtotal">₹0</span>
+    </div>
+    <div class="cart-total-row" style="border-top:1px solid var(--border);padding-top:10px;font-weight:500">
+      <span class="label">Total</span>
+      <span class="val" id="cart-total">₹0</span>
+    </div>
+    <button class="btn btn-p btn-full" onclick="placeOrder()">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M20 6L9 17l-5-5"/></svg>
+      Place Order
+    </button>
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="overlay" id="auth-modal">
+  <div class="modal">
+    <div class="modal-brand">
+      <div class="nav-icon">Cx</div>
+      <span style="font-family:'Playfair Display',serif;font-size:14px;font-weight:600">ChaiNIEx</span>
+    </div>
+    <div class="modal-title" id="auth-modal-title">Welcome back</div>
+    <div class="modal-sub" id="auth-modal-sub">Sign in to your account</div>
+    <div id="register-fields" style="display:none">
+      <div class="fg"><label class="fl">Full Name</label><input class="fi" id="reg-name" placeholder="Your name"></div>
+      <div class="fg"><label class="fl">Shipping Address</label><textarea class="fi" id="reg-addr" rows="2" placeholder="Full shipping address"></textarea></div>
+    </div>
+    <div class="fg"><label class="fl">Email</label><input class="fi" id="auth-email" type="email" placeholder="you@example.com"></div>
+    <div class="fg"><label class="fl">Password</label><input class="fi" id="auth-pass" type="password" placeholder="••••••••"></div>
+    <button class="btn btn-p btn-full" onclick="submitAuth()" id="auth-submit-btn">Sign In</button>
+    <div class="modal-switch" id="auth-switch">
+      Don't have an account? <a onclick="toggleAuthMode()">Register</a>
+    </div>
+    <button class="btn btn-g" style="position:absolute;top:16px;right:16px" onclick="closeModal('auth-modal')">✕</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <svg id="toast-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px;height:14px;flex-shrink:0"></svg>
+  <span id="toast-msg"></span>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// CONFIG — PostgreSQL backend via REST API
+// ─────────────────────────────────────────────
+const API   = 'http://localhost:4000/api';
+let token   = localStorage.getItem('chainex_token') || '';
+let userId  = localStorage.getItem('chainex_uid')   || null;
+let isRegistering = false;
+
+// Cart state: [{product, qty}]
+let cart = JSON.parse(localStorage.getItem('chainex_cart') || '[]');
+
+let allProducts = [], allCategories = [], activeCat = 0;
+
+const q   = id => document.getElementById(id);
+const fmt = n  => '₹' + Number(n).toLocaleString('en-IN');
+const fmtDate = s => new Date(s).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'});
+const PLUS = `<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg>`;
+const TEA_EMOJI = ['🍵','🫖','🌿','🍃','✨','🌾','🫧','🌺'];
+
+async function apiFetch(path, opts = {}) {
+  try {
+    const r = await fetch(API + path, {
+      headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{})},
+      ...opts
+    });
+    if (!r.ok) { const e = await r.json(); throw new Error(e.error||'error'); }
+    return await r.json();
+  } catch(e) {
+    console.warn('API:', path, e.message);
+    return null;
+  }
+}
+
+function showToast(msg, type='ok') {
+  const t=q('toast'),ico=q('toast-icon');
+  t.className='toast show '+(type==='ok'?'ok':'err');
+  ico.innerHTML=type==='ok'?'<path d="M20 6L9 17l-5-5"/>':'<path d="M18 6L6 18M6 6l12 12"/>';
+  q('toast-msg').textContent=msg;
+  setTimeout(()=>t.className='toast',3000);
+}
+function closeModal(id){q(id).classList.remove('open')}
+function openCart(){q('cart-overlay').classList.add('open');q('cart-drawer').classList.add('open');renderCart()}
+function closeCart(){q('cart-overlay').classList.remove('open');q('cart-drawer').classList.remove('open')}
+function openLogin(){q('auth-modal').classList.add('open')}
+
+function switchTab(id, el) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  q('tab-'+id).classList.add('active');
+  if (id==='orders') loadOrders();
+}
+
+// ─── AUTH ───
+function toggleAuthMode() {
+  isRegistering = !isRegistering;
+  q('auth-modal-title').textContent = isRegistering ? 'Create account' : 'Welcome back';
+  q('auth-modal-sub').textContent   = isRegistering ? 'Join ChaiNIEx' : 'Sign in to your account';
+  q('register-fields').style.display = isRegistering ? 'block' : 'none';
+  q('auth-submit-btn').textContent  = isRegistering ? 'Register' : 'Sign In';
+  q('auth-switch').innerHTML = isRegistering
+    ? 'Already have an account? <a onclick="toggleAuthMode()">Sign in</a>'
+    : 'Don\'t have an account? <a onclick="toggleAuthMode()">Register</a>';
+}
+
+async function submitAuth() {
+  const email = q('auth-email').value.trim();
+  const pass  = q('auth-pass').value;
+  if (!email || !pass) { showToast('Fill all fields','err'); return; }
+
+  if (isRegistering) {
+    const body = { full_name: q('reg-name').value.trim(), email, password: pass, shipping_address: q('reg-addr').value.trim() };
+    const r = await apiFetch('/auth/register', {method:'POST', body:JSON.stringify(body)});
+    if (r?.token) { saveAuth(r); showToast('Account created!'); closeModal('auth-modal'); }
+    else showToast(r?.error||'Registration failed','err');
+  } else {
+    const r = await apiFetch('/auth/login', {method:'POST', body:JSON.stringify({email,password:pass})});
+    if (r?.token) { saveAuth(r); showToast('Welcome back!'); closeModal('auth-modal'); }
+    else showToast(r?.error||'Invalid credentials','err');
+  }
+}
+
+function saveAuth(r) {
+  token = r.token; userId = r.user_id;
+  localStorage.setItem('chainex_token', token);
+  localStorage.setItem('chainex_uid', userId);
+  updateAuthUI();
+}
+
+function updateAuthUI() {
+  const loggedIn = !!token;
+  q('login-btn').style.display  = loggedIn ? 'none' : 'inline-flex';
+  q('logout-btn').style.display = loggedIn ? 'inline-flex' : 'none';
+}
+
+function logout() {
+  token=''; userId=null;
+  localStorage.removeItem('chainex_token');
+  localStorage.removeItem('chainex_uid');
+  updateAuthUI();
+  showToast('Logged out');
+}
+
+// ─── PRODUCTS ───
+async function loadProducts() {
+  const [prods, cats] = await Promise.all([
+    apiFetch('/products'),
+    apiFetch('/categories')
+  ]);
+  allProducts   = prods?.data   || MOCK_PRODUCTS;
+  allCategories = cats?.data    || MOCK_CATS;
+  buildCatPills();
+  renderProducts(allProducts);
+}
+
+function buildCatPills() {
+  const wrap = q('cat-pills');
+  wrap.innerHTML = `<button class="pill active" onclick="filterCat(0,this)">All</button>`;
+  allCategories.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'pill';
+    b.textContent = c.category_name;
+    b.onclick = () => filterCat(c.category_id, b);
+    wrap.appendChild(b);
+  });
+}
+
+function filterCat(catId, el) {
+  activeCat = catId;
+  document.querySelectorAll('.cat-pills .pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  const filtered = catId === 0 ? allProducts : allProducts.filter(p=>p.category_id===catId);
+  renderProducts(filtered);
+}
+
+function renderProducts(products) {
+  if (!products.length) {
+    q('products-grid').innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <svg fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+      No products in this category</div>`;
+    return;
+  }
+  q('products-grid').innerHTML = products.map((p,i) => {
+    const isFeatured = i === 0;
+    const outOfStock = p.stock_quantity === 0;
+    return `
+    <div class="prod-card${isFeatured?' featured':''}">
+      ${isFeatured ? '<div class="trail-dot"></div>' : ''}
+      ${!isFeatured ? `
+      <div class="cp tl">${PLUS}</div><div class="cp tr">${PLUS}</div>
+      <div class="cp bl">${PLUS}</div><div class="cp br">${PLUS}</div>` : ''}
+      <div class="prod-img">${TEA_EMOJI[p.product_id % TEA_EMOJI.length]}</div>
+      <div class="prod-cat">${p.category_name||'Tea'}</div>
+      <div class="prod-name">${p.product_name}</div>
+      <div class="prod-price"><span class="unit">₹</span>${Number(p.price).toLocaleString('en-IN')}</div>
+      <div class="prod-stock${p.stock_quantity<10?' low':''}">${outOfStock?'Out of stock':p.stock_quantity<10?`Only ${p.stock_quantity} left`:`${p.stock_quantity} in stock`}</div>
+      <button class="btn btn-o btn-sm prod-add" onclick="addToCart(${p.product_id})" ${outOfStock?'disabled style="opacity:.5;cursor:not-allowed"':''}>
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:12px;height:12px"><path d="M12 5v14M5 12h14"/></svg>
+        Add to cart
+      </button>
+    </div>`;
+  }).join('');
+}
+
+// ─── CART ───
+function saveCart() { localStorage.setItem('chainex_cart', JSON.stringify(cart)); }
+
+function addToCart(productId) {
+  const product = allProducts.find(p => p.product_id === productId);
+  if (!product) return;
+  if (product.stock_quantity === 0) { showToast('Out of stock','err'); return; }
+  const existing = cart.find(i => i.product_id === productId);
+  if (existing) {
+    if (existing.qty >= product.stock_quantity) { showToast('Max stock reached','err'); return; }
+    existing.qty++;
+  } else {
+    cart.push({product_id:productId, name:product.product_name, price:product.price,
+      emoji:TEA_EMOJI[productId%TEA_EMOJI.length], qty:1, max:product.stock_quantity});
+  }
+  saveCart(); updateCartBadge(); showToast(`${product.product_name} added`);
+}
+
+function updateCartBadge() {
+  const total = cart.reduce((s,i)=>s+i.qty,0);
+  const badge = q('cart-count');
+  badge.textContent = total;
+  badge.classList.toggle('show', total > 0);
+  q('cart-item-count').textContent = total + ' item' + (total!==1?'s':'');
+}
+
+function renderCart() {
+  const body = q('cart-body'), footer = q('cart-footer');
+  if (!cart.length) {
+    body.innerHTML = `<div class="cart-empty">
+      <svg fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      Your cart is empty</div>`;
+    footer.style.display = 'none';
+    return;
+  }
+  const subtotal = cart.reduce((s,i)=>s+i.price*i.qty,0);
+  body.innerHTML = cart.map(item => `
+  <div class="cart-item">
+    <div class="ci-icon">${item.emoji}</div>
+    <div class="ci-info">
+      <div class="ci-name">${item.name}</div>
+      <div class="ci-price">₹${Number(item.price).toLocaleString('en-IN')} each</div>
+      <div class="ci-qty">
+        <button class="qty-btn" onclick="updateQty(${item.product_id},-1)">−</button>
+        <span class="qty-val">${item.qty}</span>
+        <button class="qty-btn" onclick="updateQty(${item.product_id},1)">+</button>
+        <span class="ci-price" style="margin-left:4px">= ₹${Number(item.price*item.qty).toLocaleString('en-IN')}</span>
+      </div>
+    </div>
+    <button class="ci-remove" onclick="removeFromCart(${item.product_id})">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>`).join('');
+  footer.style.display = 'block';
+  q('cart-subtotal').textContent = fmt(subtotal);
+  q('cart-total').textContent    = fmt(subtotal);
+}
+
+function updateQty(productId, delta) {
+  const item = cart.find(i=>i.product_id===productId);
+  if (!item) return;
+  item.qty = Math.max(0, Math.min(item.max, item.qty+delta));
+  if (item.qty === 0) cart = cart.filter(i=>i.product_id!==productId);
+  saveCart(); updateCartBadge(); renderCart();
+}
+
+function removeFromCart(productId) {
+  cart = cart.filter(i=>i.product_id!==productId);
+  saveCart(); updateCartBadge(); renderCart();
+}
+
+// ─── PLACE ORDER ───
+async function placeOrder() {
+  if (!token) { closeCart(); openLogin(); showToast('Please login first','err'); return; }
+  if (!cart.length) return;
+  const total = cart.reduce((s,i)=>s+i.price*i.qty,0);
+  const body = {
+    items: cart.map(i=>({product_id:i.product_id, quantity:i.qty})),
+    total_amount: total
+  };
+  const r = await apiFetch('/orders',{method:'POST',body:JSON.stringify(body)});
+  if (r) {
+    cart = []; saveCart(); updateCartBadge(); closeCart();
+    showToast('Order placed successfully! 🎉');
+    switchTab('orders', q('orders-tab'));
+  } else showToast('Order failed. Check stock.','err');
+}
+
+// ─── ORDERS ───
+async function loadOrders() {
+  if (!token) {
+    q('orders-list-wrap').innerHTML = `<div class="empty-state">
+      <svg fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <div style="margin-top:12px">Login to see your orders</div>
+      <button class="btn btn-p btn-sm" style="margin:12px auto 0;display:flex" onclick="openLogin()">Login</button>
+    </div>`;
+    return;
+  }
+  const r = await apiFetch('/orders');
+  const orders = r?.data || MOCK_ORDERS;
+  if (!orders.length) {
+    q('orders-list-wrap').innerHTML = `<div class="empty-state">No orders yet — go shopping!</div>`;
+    return;
+  }
+  q('orders-list-wrap').innerHTML = `<div class="orders-list">${orders.map(o=>{
+    const bMap={Pending:'b-pending',Processing:'b-processing',Shipped:'b-shipped',Delivered:'b-delivered',Cancelled:'b-cancelled'};
+    return `
+    <div class="order-card">
+      <div class="cp tl">${PLUS}</div><div class="cp tr">${PLUS}</div>
+      <div class="cp bl">${PLUS}</div><div class="cp br">${PLUS}</div>
+      <div class="order-head">
+        <span class="order-id">#${o.order_id}</span>
+        <span class="badge ${bMap[o.status]||'b-pending'}">${o.status}</span>
+        <span class="order-date">${fmtDate(o.order_date)}</span>
+        <span class="order-total">${fmt(o.total_amount)}</span>
+      </div>
+      ${o.items ? `<div class="order-items-list">
+        ${o.items.map(i=>`<span class="order-item-chip">${i.product_name} ×${i.quantity}</span>`).join('')}
+      </div>` : ''}
+      ${o.status==='Pending'?`<button class="btn btn-o btn-sm order-cancel-btn" onclick="cancelOrder(${o.order_id})">Cancel Order</button>`:''}
+    </div>`;
+  }).join('')}</div>`;
+}
+
+async function cancelOrder(orderId) {
+  if (!confirm('Cancel this order?')) return;
+  const r = await apiFetch(`/orders/${orderId}`,{method:'PATCH',body:JSON.stringify({status:'Cancelled'})});
+  if (r) { showToast('Order cancelled'); loadOrders(); }
+  else showToast('Could not cancel','err');
+}
+
+// ─── MOCK DATA ───
+const MOCK_PRODUCTS = [
+  {product_id:1,product_name:'Darjeeling First Flush',category_id:2,category_name:'Black Tea',price:280,stock_quantity:150},
+  {product_id:2,product_name:'Nilgiri Green Reserve',category_id:1,category_name:'Green Tea',price:180,stock_quantity:8},
+  {product_id:3,product_name:'Chamomile Calm Blend',category_id:3,category_name:'Herbal Tea',price:240,stock_quantity:90},
+  {product_id:4,product_name:'Oolong Reserve 2024',category_id:4,category_name:'Oolong Tea',price:420,stock_quantity:5},
+  {product_id:5,product_name:'Masala Chai Premium',category_id:2,category_name:'Black Tea',price:160,stock_quantity:200},
+  {product_id:6,product_name:'White Peony Grade A',category_id:1,category_name:'Green Tea',price:520,stock_quantity:30},
+  {product_id:7,product_name:'Lemon Ginger Zest',category_id:3,category_name:'Herbal Tea',price:140,stock_quantity:120},
+  {product_id:8,product_name:'Assam Estate Bold',category_id:2,category_name:'Black Tea',price:190,stock_quantity:0},
+];
+const MOCK_CATS = [
+  {category_id:1,category_name:'Green Tea'},{category_id:2,category_name:'Black Tea'},
+  {category_id:3,category_name:'Herbal Tea'},{category_id:4,category_name:'Oolong Tea'},
+];
+const MOCK_ORDERS = [
+  {order_id:1001,order_date:'2025-05-08T10:30:00Z',total_amount:840,status:'Pending',items:[{product_name:'Darjeeling FF',quantity:3}]},
+  {order_id:1002,order_date:'2025-05-06T09:15:00Z',total_amount:320,status:'Shipped',items:[{product_name:'Nilgiri Green',quantity:2},{product_name:'Chamomile',quantity:1}]},
+  {order_id:1003,order_date:'2025-05-04T14:00:00Z',total_amount:1200,status:'Delivered',items:[{product_name:'Oolong Reserve',quantity:2},{product_name:'White Peony',quantity:1}]},
+];
+
+// ─── INIT ───
+loadProducts();
+updateAuthUI();
+updateCartBadge();
+</script>
+</body>
+</html>

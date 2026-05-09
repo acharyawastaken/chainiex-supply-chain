@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChaiNIEx · Delivery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0907;--surface:#141210;--surface-2:#1c1916;--border:rgba(255,255,255,.09);
+  --border-h:rgba(255,255,255,.18);--accent:#c8923a;--accent-d:rgba(200,146,58,.15);
+  --text:#f4ede0;--muted:#6e6254;--r:12px;--rs:7px;
+  --s-txt:#7ecf9a;--w-txt:#f0a84d;--d-txt:#e87878;--i-txt:#6ab4f0;
+  --sw:232px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{color-scheme:dark}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;font-size:14px;line-height:1.6;min-height:100vh;display:flex}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border-h);border-radius:4px}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sw);min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:22px 14px;position:fixed;left:0;top:0;bottom:0;z-index:10}
+.logo{display:flex;align-items:center;gap:10px;padding:0 8px;margin-bottom:28px}
+.logo-icon{width:30px;height:30px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:13px;color:#0a0806;font-weight:700;flex-shrink:0}
+.logo-text{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;letter-spacing:-.02em;color:var(--text)}
+.logo-sub{font-size:10px;font-family:'JetBrains Mono',monospace;background:var(--accent-d);color:var(--accent);border:1px solid rgba(200,146,58,.2);padding:1px 5px;border-radius:3px;margin-left:auto;white-space:nowrap}
+.nav-label{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;padding:0 8px;margin-bottom:4px;margin-top:18px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px;border-radius:var(--rs);color:var(--muted);cursor:pointer;transition:all .15s;border:1px solid transparent;margin-bottom:1px;font-size:13.5px;user-select:none}
+.nav-item:hover{background:rgba(255,255,255,.04);color:var(--text)}
+.nav-item.active{background:var(--accent-d);color:var(--accent);border-color:rgba(200,146,58,.2);font-weight:500}
+.nav-item svg{width:15px;height:15px;flex-shrink:0}
+.nav-item .nc{margin-left:auto;background:var(--accent);color:#0a0806;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;padding:1px 6px;border-radius:999px}
+.sidebar-footer{margin-top:auto;border-top:1px solid var(--border);padding-top:14px}
+.profile{display:flex;align-items:center;gap:9px;padding:8px;border-radius:var(--rs);cursor:pointer;transition:background .15s}
+.profile:hover{background:rgba(255,255,255,.04)}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--accent-d);border:1px solid rgba(200,146,58,.3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--accent);font-family:'JetBrains Mono',monospace;flex-shrink:0}
+.profile-name{font-size:12.5px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.profile-role{font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+
+/* ── MAIN ── */
+.main{margin-left:var(--sw);flex:1;min-height:100vh;display:flex;flex-direction:column}
+.topbar{height:54px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:10px;position:sticky;top:0;background:rgba(10,9,7,.88);backdrop-filter:blur(12px);z-index:5}
+.topbar-title{font-family:'Playfair Display',serif;font-size:14px;font-weight:500;color:var(--text)}
+.sep{width:1px;height:14px;background:var(--border);flex-shrink:0}
+.topbar-crumb{font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+
+/* PAGE NAV */
+.pnav{display:flex;gap:4px}
+.pnav a{font-size:11px;color:var(--muted);text-decoration:none;padding:4px 9px;border-radius:var(--rs);border:1px solid transparent;font-family:'JetBrains Mono',monospace;transition:all .15s}
+.pnav a:hover{color:var(--text);border-color:var(--border)}
+.pnav a.cur{color:var(--accent);border-color:rgba(200,146,58,.25)}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .15s;color:var(--text);background:transparent}
+.btn svg{width:13px;height:13px}
+.btn-p{background:var(--accent);color:#0a0806;border-color:var(--accent)}
+.btn-p:hover{opacity:.88}
+.btn-o{border-color:var(--border-h)}
+.btn-o:hover{background:rgba(255,255,255,.05)}
+.btn-g{color:var(--muted)}
+.btn-g:hover{color:var(--text);background:rgba(255,255,255,.04)}
+.btn-success{background:rgba(126,207,154,.12);color:var(--s-txt);border-color:rgba(126,207,154,.25)}
+.btn-success:hover{background:rgba(126,207,154,.2)}
+.btn-warn{background:rgba(240,168,77,.1);color:var(--w-txt);border-color:rgba(240,168,77,.25)}
+.btn-warn:hover{background:rgba(240,168,77,.18)}
+.btn-danger{color:var(--d-txt)}
+.btn-danger:hover{background:rgba(232,120,120,.08);border-color:rgba(232,120,120,.2)}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-xs{padding:3px 8px;font-size:11px}
+
+/* ── CONTENT ── */
+.content{padding:24px;flex:1}
+.view{display:none}
+.view.active{display:block;animation:fadeUp .35s ease both}
+
+/* ── PAGE HEADER ── */
+.pg-head{margin-bottom:20px}
+.pg-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.03em}
+.pg-sub{font-size:12.5px;color:var(--muted);margin-top:2px}
+
+/* ── STATS GRID ── */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.stat-card{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;animation:fadeUp .5s ease both;overflow:hidden}
+.stat-card:nth-child(1){animation-delay:.05s}.stat-card:nth-child(2){animation-delay:.1s}
+.stat-card:nth-child(3){animation-delay:.15s}.stat-card:nth-child(4){animation-delay:.2s}
+/* corner plus icons */
+.cp{position:absolute;color:var(--border-h);width:11px;height:11px;line-height:1}
+.cp.tl{top:-5px;left:-5px}.cp.tr{top:-5px;right:-5px}.cp.bl{bottom:-5px;left:-5px}.cp.br{bottom:-5px;right:-5px}
+.cp svg{width:11px;height:11px}
+.stat-label{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+.stat-val{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:500;color:var(--text);letter-spacing:-.03em;line-height:1}
+.stat-val .unit{font-size:13px;color:var(--muted);font-weight:400;margin-right:1px}
+.stat-delta{font-size:11px;margin-top:8px;color:var(--muted)}
+.stat-delta.up{color:var(--s-txt)}.stat-delta.dn{color:var(--d-txt)}
+
+/* border trail on featured stat card */
+.trail-card{overflow:hidden}
+.trail-card .trail-dot{position:absolute;width:70px;height:70px;background:radial-gradient(circle,var(--accent) 0%,transparent 70%);border-radius:50%;offset-path:rect(0px 100% 100% 0px round 12px);animation:orbit 3.5s linear infinite;pointer-events:none;filter:blur(10px);opacity:.5}
+@keyframes orbit{from{offset-distance:0%}to{offset-distance:100%}}
+
+/* ── SECTION BOX ── */
+.section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:18px;animation:fadeUp .5s ease both;animation-delay:.25s}
+.sec-head{display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid var(--border);gap:10px}
+.sec-title{font-size:13.5px;font-weight:500;color:var(--text);flex:1}
+.sec-sub{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+
+/* ── TABLE ── */
+table{width:100%;border-collapse:collapse}
+th{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:400;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:9px 20px;text-align:left;border-bottom:1px solid var(--border)}
+td{padding:11px 20px;font-size:13px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--text);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02);transition:background .1s}
+.mono{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted)}
+.fw{font-weight:500}
+.empty{text-align:center;padding:32px;color:var(--muted);font-style:italic}
+
+/* ── BADGE ── */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:999px;font-size:10.5px;font-family:'JetBrains Mono',monospace;font-weight:500;border:1px solid transparent}
+.badge::before{content:'';width:4px;height:4px;border-radius:50%;background:currentColor}
+.b-pending{background:rgba(240,168,77,.1);color:var(--w-txt);border-color:rgba(240,168,77,.2)}
+.b-processing{background:rgba(138,100,230,.1);color:#b79cef;border-color:rgba(138,100,230,.2)}
+.b-shipped{background:rgba(106,180,240,.1);color:var(--i-txt);border-color:rgba(106,180,240,.2)}
+.b-delivered{background:rgba(126,207,154,.1);color:var(--s-txt);border-color:rgba(126,207,154,.2)}
+.b-cancelled{background:rgba(232,120,120,.1);color:var(--d-txt);border-color:rgba(232,120,120,.2)}
+.b-active{background:rgba(126,207,154,.1);color:var(--s-txt);border-color:rgba(126,207,154,.2)}
+.b-offline{background:rgba(110,98,84,.12);color:var(--muted);border-color:rgba(110,98,84,.2)}
+.b-transit{background:rgba(106,180,240,.1);color:var(--i-txt);border-color:rgba(106,180,240,.2)}
+
+/* ── DELIVERY CARD (active run) ── */
+.run-card{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:14px;animation:fadeUp .4s ease both;overflow:visible;transition:border-color .2s}
+.run-card:hover{border-color:rgba(200,146,58,.25)}
+.run-card.featured{border-color:rgba(200,146,58,.18);overflow:hidden}
+.run-card.featured .trail-dot{position:absolute;width:60px;height:60px;background:radial-gradient(circle,var(--accent) 0%,transparent 70%);border-radius:50%;offset-path:rect(0px 100% 100% 0px round 12px);animation:orbit 3s linear infinite;pointer-events:none;filter:blur(9px);opacity:.5}
+.run-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.run-id{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)}
+.run-customer{font-size:14px;font-weight:500;color:var(--text)}
+.run-actions{margin-left:auto;display:flex;gap:6px}
+.run-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.run-meta-item{background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:10px 14px}
+.run-meta-label{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+.run-meta-val{font-size:13px;font-weight:500;color:var(--text)}
+.run-items{display:flex;flex-wrap:wrap;gap:6px}
+.run-item-chip{font-size:11px;background:var(--surface-2);border:1px solid var(--border);border-radius:5px;padding:3px 8px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+
+/* ── ROUTE PROGRESS ── */
+.route-steps{display:flex;align-items:center;gap:0;margin-bottom:12px}
+.route-step{flex:1;display:flex;flex-direction:column;align-items:center;position:relative}
+.route-step::after{content:'';position:absolute;top:10px;left:50%;right:-50%;height:1px;background:var(--border);z-index:0}
+.route-step:last-child::after{display:none}
+.step-dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);background:var(--surface-2);display:flex;align-items:center;justify-content:center;z-index:1;position:relative;transition:all .3s}
+.step-dot.done{border-color:var(--s-txt);background:rgba(126,207,154,.15)}
+.step-dot.done svg{color:var(--s-txt)}
+.step-dot.active{border-color:var(--accent);background:var(--accent-d);animation:pulse-ring 1.8s ease infinite}
+.step-dot.active svg{color:var(--accent)}
+.step-dot svg{width:9px;height:9px;color:var(--muted)}
+.step-label{font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--muted);margin-top:5px;text-align:center;text-transform:uppercase;letter-spacing:.05em}
+.step-label.done{color:var(--s-txt)}.step-label.active{color:var(--accent)}
+@keyframes pulse-ring{0%,100%{box-shadow:0 0 0 0 rgba(200,146,58,.3)}50%{box-shadow:0 0 0 5px rgba(200,146,58,0)}}
+
+/* ── MODAL / OVERLAY ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:var(--surface-2);border:1px solid var(--border-h);border-radius:16px;width:min(480px,92vw);padding:28px;animation:fadeUp .2s ease;position:relative}
+.modal-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;margin-bottom:4px}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:22px}
+.fg{margin-bottom:13px}
+.fl{display:block;font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.fi{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 11px;transition:border-color .15s}
+.fi:focus{outline:none;border-color:var(--accent)}
+.fi::placeholder{color:var(--muted)}
+select.fi{appearance:none;cursor:pointer}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--surface-2);border:1px solid var(--border-h);border-radius:var(--r);padding:11px 15px;font-size:13px;color:var(--text);z-index:200;display:none;align-items:center;gap:8px;animation:fadeUp .2s ease}
+.toast.show{display:flex}
+.toast.ok{border-color:rgba(126,207,154,.3)}
+.toast.err{border-color:rgba(232,120,120,.3)}
+
+/* ── STATUS BADGE INPUT ── */
+.status-sel{appearance:none;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 8px;cursor:pointer}
+.status-sel:focus{outline:none;border-color:var(--accent)}
+
+/* ── PARTNER GRID ── */
+.partners-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;padding:20px}
+.partner-card{position:relative;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:16px;transition:border-color .2s;animation:fadeUp .4s ease both;overflow:visible}
+.partner-card:hover{border-color:rgba(200,146,58,.25)}
+.partner-top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.partner-avatar{width:36px;height:36px;border-radius:50%;background:var(--accent-d);border:1px solid rgba(200,146,58,.3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--accent);font-family:'JetBrains Mono',monospace;flex-shrink:0}
+.partner-name{font-size:13.5px;font-weight:500;color:var(--text)}
+.partner-id{font-size:10.5px;font-family:'JetBrains Mono',monospace;color:var(--muted)}
+.partner-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.ps-item{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 10px}
+.ps-label{font-size:9.5px;font-family:'JetBrains Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.ps-val{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;color:var(--text);margin-top:2px}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── EMPTY STATE ── */
+.empty-state{padding:50px;text-align:center;color:var(--muted)}
+.empty-state svg{width:36px;height:36px;margin:0 auto 12px;display:block;opacity:.3}
+
+/* ── LOGIN SCREEN ── */
+.login-screen{display:none;position:fixed;inset:0;background:var(--bg);z-index:200;align-items:center;justify-content:center}
+.login-screen.show{display:flex}
+.login-box{background:var(--surface-2);border:1px solid var(--border-h);border-radius:16px;width:min(400px,92vw);padding:32px;animation:fadeUp .25s ease;position:relative}
+.login-brand{display:flex;align-items:center;gap:9px;margin-bottom:24px}
+.login-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:4px;letter-spacing:-.03em}
+.login-sub{font-size:13px;color:var(--muted);margin-bottom:22px}
+
+@media(max-width:900px){
+  .sidebar{display:none}
+  .main{margin-left:0}
+  .stats{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:520px){
+  .stats{grid-template-columns:1fr 1fr}
+  .run-meta{grid-template-columns:1fr 1fr}
+  .content{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="login-screen">
+  <div class="login-box">
+    <div class="cp tl"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg></div>
+    <div class="cp tr"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg></div>
+    <div class="cp bl"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg></div>
+    <div class="cp br"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg></div>
+    <div class="login-brand">
+      <div style="width:30px;height:30px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:13px;color:#0a0806;font-weight:700">Cx</div>
+      <span style="font-family:'Playfair Display',serif;font-size:15px;font-weight:700">ChaiNIEx</span>
+      <span style="font-size:10px;font-family:'JetBrains Mono',monospace;background:var(--accent-d);color:var(--accent);border:1px solid rgba(200,146,58,.2);padding:1px 6px;border-radius:3px">Delivery</span>
+    </div>
+    <div class="login-title">Partner Login</div>
+    <div class="login-sub">Sign in to your delivery partner account.</div>
+    <div class="fg"><label class="fl">Email</label><input class="fi" id="d-email" type="email" placeholder="partner@chainex.in"></div>
+    <div class="fg"><label class="fl">Password</label><input class="fi" id="d-pass" type="password" placeholder="••••••••"></div>
+    <button class="btn btn-p" style="width:100%;justify-content:center;margin-top:4px" onclick="doLogin()">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+      Sign In
+    </button>
+    <div style="text-align:center;margin-top:12px;font-size:12px;color:var(--muted)">
+      <a href="../customer/index.html" style="color:var(--accent);text-decoration:none">← Back to Shop</a>
+    </div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">Cx</div>
+    <span class="logo-text">ChaiNIEx</span>
+    <span class="logo-sub">Delivery</span>
+  </div>
+
+  <div class="nav-label">Dashboard</div>
+  <div class="nav-item active" onclick="showView('dashboard',this)" id="nav-dashboard">
+    <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    Overview
+  </div>
+  <div class="nav-item" onclick="showView('runs',this)" id="nav-runs">
+    <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    Active Runs
+    <span class="nc" id="active-run-count">0</span>
+  </div>
+  <div class="nav-item" onclick="showView('history',this)" id="nav-history">
+    <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    History
+  </div>
+
+  <div class="nav-label">Management</div>
+  <div class="nav-item" onclick="showView('partners',this)" id="nav-partners">
+    <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+    Partners
+  </div>
+  <div class="nav-item" onclick="showView('zones',this)" id="nav-zones">
+    <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+    Zones
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="profile">
+      <div class="avatar" id="d-avatar">DP</div>
+      <div style="min-width:0">
+        <div class="profile-name" id="d-name">Delivery Partner</div>
+        <div class="profile-role">partner</div>
+      </div>
+      <button class="btn btn-g btn-sm" onclick="doLogout()" style="margin-left:auto;padding:4px 6px" title="Logout">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      </button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <span class="topbar-title">ChaiNIEx</span>
+    <div class="sep"></div>
+    <span class="topbar-crumb" id="topbar-crumb">Overview</span>
+    <div class="topbar-right">
+      <div class="pnav">
+        <a href="../customer/index.html">Shop</a>
+        <a href="../supplier/index.html" class="cur">Delivery</a>
+        <a href="../admin/index.html">Admin</a>
+      </div>
+      <div id="status-toggle" style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted)">Status:</span>
+        <select class="status-sel" id="my-status" onchange="updateMyStatus(this.value)">
+          <option value="active">Active</option>
+          <option value="offline" selected>Offline</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENT AREA -->
+  <div class="content">
+
+    <!-- ─── DASHBOARD VIEW ─── -->
+    <div class="view active" id="view-dashboard">
+      <div class="pg-head">
+        <div class="pg-title">Delivery Overview</div>
+        <div class="pg-sub">Today's delivery metrics and active assignments</div>
+      </div>
+
+      <div class="stats">
+        <!-- featured with trail -->
+        <div class="stat-card trail-card">
+          <div class="trail-dot"></div>
+          <div class="stat-label">Pending Dispatch</div>
+          <div class="stat-val" id="stat-pending">—</div>
+          <div class="stat-delta" id="stat-pending-d">Orders awaiting pickup</div>
+        </div>
+        <div class="stat-card">
+          <div class="cp tl"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg></div>
+          <div class="cp tr"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg></div>
+          <div class="cp bl"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg></div>
+          <div class="cp br"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg></div>
+          <div class="stat-label">In Transit</div>
+          <div class="stat-val" id="stat-transit">—</div>
+          <div class="stat-delta up" id="stat-transit-d">Shipped orders</div>
+        </div>
+        <div class="stat-card">
+          <div class="cp tl"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg></div>
+          <div class="cp tr"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg></div>
+          <div class="cp bl"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg></div>
+          <div class="cp br"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg></div>
+          <div class="stat-label">Delivered Today</div>
+          <div class="stat-val" id="stat-delivered">—</div>
+          <div class="stat-delta up">Completed</div>
+        </div>
+        <div class="stat-card">
+          <div class="cp tl"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg></div>
+          <div class="cp tr"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg></div>
+          <div class="cp bl"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg></div>
+          <div class="cp br"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg></div>
+          <div class="stat-label">Active Partners</div>
+          <div class="stat-val" id="stat-partners">—</div>
+          <div class="stat-delta">On duty now</div>
+        </div>
+      </div>
+
+      <!-- Recent orders to dispatch -->
+      <div class="section">
+        <div class="sec-head">
+          <div class="sec-title">Orders to Dispatch</div>
+          <div class="sec-sub">Pending &amp; Processing</div>
+          <button class="btn btn-o btn-sm" onclick="loadAll()">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+            Refresh
+          </button>
+        </div>
+        <table>
+          <thead><tr>
+            <th>#</th><th>Customer</th><th>Items</th><th>Amount</th><th>Status</th><th>Date</th><th>Action</th>
+          </tr></thead>
+          <tbody id="dispatch-tbody"><tr><td colspan="7" class="empty">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ─── ACTIVE RUNS VIEW ─── -->
+    <div class="view" id="view-runs">
+      <div class="pg-head">
+        <div class="pg-title">Active Runs</div>
+        <div class="pg-sub">Orders currently in transit</div>
+      </div>
+      <div id="runs-list">
+        <div class="empty-state">
+          <svg fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          No active runs right now
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── HISTORY VIEW ─── -->
+    <div class="view" id="view-history">
+      <div class="pg-head">
+        <div class="pg-title">Delivery History</div>
+        <div class="pg-sub">All completed and cancelled deliveries</div>
+      </div>
+      <div class="section">
+        <div class="sec-head">
+          <div class="sec-title">All Orders</div>
+          <div class="sec-sub" id="history-count">—</div>
+        </div>
+        <table>
+          <thead><tr>
+            <th>#</th><th>Customer</th><th>Amount</th><th>Status</th><th>Date</th><th>Update Status</th>
+          </tr></thead>
+          <tbody id="history-tbody"><tr><td colspan="6" class="empty">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ─── PARTNERS VIEW ─── -->
+    <div class="view" id="view-partners">
+      <div class="pg-head">
+        <div class="pg-title">Delivery Partners</div>
+        <div class="pg-sub">Partner roster and performance</div>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:18px">
+        <button class="btn btn-p" onclick="openPartnerModal()">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          Add Partner
+        </button>
+      </div>
+      <div class="partners-grid" id="partners-grid">
+        <div class="empty-state" style="grid-column:1/-1">Loading partners…</div>
+      </div>
+    </div>
+
+    <!-- ─── ZONES VIEW ─── -->
+    <div class="view" id="view-zones">
+      <div class="pg-head">
+        <div class="pg-title">Delivery Zones</div>
+        <div class="pg-sub">Coverage areas and assignments</div>
+      </div>
+      <div class="section" style="animation-delay:.1s">
+        <div class="sec-head">
+          <div class="sec-title">Zone Map</div>
+          <div class="sec-sub">Service coverage</div>
+          <button class="btn btn-p btn-sm" onclick="openZoneModal()">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            Add Zone
+          </button>
+        </div>
+        <div id="zones-list" style="padding:16px">
+          <div style="text-align:center;color:var(--muted);padding:32px">Loading zones…</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ASSIGN MODAL -->
+<div class="overlay" id="assign-modal">
+  <div class="modal">
+    <div class="cp tl"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg></div>
+    <div class="cp br"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg></div>
+    <div class="modal-title">Assign Delivery</div>
+    <div class="modal-sub">Select a partner and update status for order <span id="assign-order-label" style="color:var(--accent);font-family:'JetBrains Mono',monospace"></span></div>
+    <div class="fg">
+      <label class="fl">Delivery Partner</label>
+      <select class="fi" id="assign-partner">
+        <option value="">— Select partner —</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label class="fl">Update Status to</label>
+      <select class="fi" id="assign-status">
+        <option value="Processing">Processing</option>
+        <option value="Shipped" selected>Shipped (In Transit)</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:6px">
+      <button class="btn btn-g" onclick="closeModal('assign-modal')">Cancel</button>
+      <button class="btn btn-p" onclick="confirmAssign()">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+        Confirm Assign
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- PARTNER MODAL -->
+<div class="overlay" id="partner-modal">
+  <div class="modal">
+    <div class="cp tl"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg></div>
+    <div class="cp br"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg></div>
+    <div class="modal-title" id="partner-modal-title">Add Partner</div>
+    <div class="modal-sub">Enter delivery partner details</div>
+    <div class="fg"><label class="fl">Full Name</label><input class="fi" id="pm-name" placeholder="e.g. Ravi Kumar"></div>
+    <div class="fg"><label class="fl">Email</label><input class="fi" id="pm-email" type="email" placeholder="ravi@chainex.in"></div>
+    <div class="fg"><label class="fl">Phone</label><input class="fi" id="pm-phone" placeholder="+91 9876543210"></div>
+    <div class="fg">
+      <label class="fl">Zone</label>
+      <select class="fi" id="pm-zone">
+        <option value="Mysuru Central">Mysuru Central</option>
+        <option value="Jayanagar">Jayanagar</option>
+        <option value="Kuvempunagar">Kuvempunagar</option>
+        <option value="Vijayanagar">Vijayanagar</option>
+        <option value="Hebbal">Hebbal</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:6px">
+      <button class="btn btn-g" onclick="closeModal('partner-modal')">Cancel</button>
+      <button class="btn btn-p" onclick="savePartner()">Save Partner</button>
+    </div>
+  </div>
+</div>
+
+<!-- ZONE MODAL -->
+<div class="overlay" id="zone-modal">
+  <div class="modal">
+    <div class="cp tl"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg></div>
+    <div class="cp br"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg></div>
+    <div class="modal-title">Add Zone</div>
+    <div class="modal-sub">Define a new delivery coverage area</div>
+    <div class="fg"><label class="fl">Zone Name</label><input class="fi" id="zm-name" placeholder="e.g. Mysuru North"></div>
+    <div class="fg"><label class="fl">Pincode Range</label><input class="fi" id="zm-pin" placeholder="e.g. 570001 – 570010"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:6px">
+      <button class="btn btn-g" onclick="closeModal('zone-modal')">Cancel</button>
+      <button class="btn btn-p" onclick="saveZone()">Save Zone</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <svg id="toast-ico" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px;height:14px;flex-shrink:0"></svg>
+  <span id="toast-msg"></span>
+</div>
+
+<script>
+// ─── CONFIG ───
+const API = 'http://localhost:4000/api';
+let token = localStorage.getItem('chainex_delivery_token') || '';
+let allOrders = [];
+let allPartners = [];
+let allZones = [];
+let assigningOrderId = null;
+
+const PLUS = `<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg>`;
+
+// ─── HELPERS ───
+const q = id => document.getElementById(id);
+const fmt = n => '₹' + Number(n).toLocaleString('en-IN');
+function fmtDate(s) {
+  if (!s) return '—';
+  const d = new Date(s);
+  return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+}
+
+async function apiFetch(path, opts={}) {
+  try {
+    const headers = {'Content-Type':'application/json'};
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    const r = await fetch(API + path, {...opts, headers});
+    if (r.status === 401) { doLogout(); return null; }
+    return await r.json();
+  } catch { return null; }
+}
+
+function showToast(msg, type='ok') {
+  const t = q('toast'), ico = q('toast-ico');
+  t.className = 'toast show ' + (type==='ok'?'ok':'err');
+  ico.innerHTML = type==='ok'
+    ? '<path d="M20 6L9 17l-5-5"/>'
+    : '<path d="M18 6L6 18M6 6l12 12"/>';
+  q('toast-msg').textContent = msg;
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+function closeModal(id) { q(id).classList.remove('open'); }
+
+// ─── AUTH ───
+function checkAuth() {
+  if (!token) {
+    q('login-screen').classList.add('show');
+  } else {
+    q('login-screen').classList.remove('show');
+    const name = localStorage.getItem('chainex_delivery_name') || 'Partner';
+    q('d-name').textContent = name;
+    q('d-avatar').textContent = name.slice(0,2).toUpperCase();
+    loadAll();
+  }
+}
+
+async function doLogin() {
+  const email = q('d-email').value.trim();
+  const pass  = q('d-pass').value;
+  if (!email || !pass) { showToast('Fill all fields','err'); return; }
+  
+  const r = await apiFetch('/auth/login', {method:'POST', body:JSON.stringify({email, password:pass})});
+  if (r?.token) {
+    token = r.token;
+    localStorage.setItem('chainex_delivery_token', token);
+    localStorage.setItem('chainex_delivery_name', r.full_name || email.split('@')[0]);
+    checkAuth();
+    showToast('Welcome back!');
+  } else {
+    // Demo: accept any credentials for delivery portal
+    token = 'demo_delivery_token';
+    localStorage.setItem('chainex_delivery_token', token);
+    const dname = email.split('@')[0] || 'Delivery Partner';
+    localStorage.setItem('chainex_delivery_name', dname);
+    checkAuth();
+    showToast('Signed in (demo mode)');
+  }
+}
+
+function doLogout() {
+  token = '';
+  localStorage.removeItem('chainex_delivery_token');
+  localStorage.removeItem('chainex_delivery_name');
+  q('login-screen').classList.add('show');
+  showToast('Logged out');
+}
+
+// ─── VIEW NAV ───
+function showView(id, el) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  q('view-'+id).classList.add('active');
+  if (el) el.classList.add('active');
+  const labels = {dashboard:'Overview',runs:'Active Runs',history:'History',partners:'Partners',zones:'Zones'};
+  q('topbar-crumb').textContent = labels[id] || id;
+  if (id === 'partners') renderPartners();
+  if (id === 'zones')    renderZones();
+  if (id === 'runs')     renderRuns();
+  if (id === 'history')  renderHistory();
+}
+
+// ─── LOAD ALL ───
+async function loadAll() {
+  const [orders, users] = await Promise.all([
+    apiFetch('/orders'),
+    apiFetch('/users')
+  ]);
+  allOrders = orders?.data || MOCK_ORDERS;
+  renderDashboard();
+  renderRuns();
+  renderHistory();
+
+  // load partners from mock (no dedicated endpoint)
+  allPartners = MOCK_PARTNERS;
+  allZones    = MOCK_ZONES;
+  renderPartners();
+  renderZones();
+}
+
+// ─── DASHBOARD ───
+function renderDashboard() {
+  const pending   = allOrders.filter(o => o.status === 'Pending').length;
+  const transit   = allOrders.filter(o => o.status === 'Shipped').length;
+  const delivered = allOrders.filter(o => o.status === 'Delivered').length;
+  const active    = allPartners.filter(p => p.status === 'active').length;
+
+  q('stat-pending').textContent   = pending;
+  q('stat-transit').textContent   = transit;
+  q('stat-delivered').textContent = delivered;
+  q('stat-partners').textContent  = active + '/' + allPartners.length;
+
+  q('active-run-count').textContent = transit;
+
+  // dispatch table: Pending + Processing
+  const dispatchOrders = allOrders.filter(o => ['Pending','Processing'].includes(o.status));
+  const bMap = {Pending:'b-pending',Processing:'b-processing',Shipped:'b-shipped',Delivered:'b-delivered',Cancelled:'b-cancelled'};
+  q('dispatch-tbody').innerHTML = dispatchOrders.length
+    ? dispatchOrders.map(o => `
+      <tr>
+        <td class="mono">#${o.order_id}</td>
+        <td class="fw">${o.full_name || o.user_name || 'Customer'}</td>
+        <td>${(o.items||[]).map(i=>`<span class="run-item-chip">${i.product_name||i.name} ×${i.quantity}</span>`).join(' ') || '<span style="color:var(--muted);font-size:12px">—</span>'}</td>
+        <td class="mono">${fmt(o.total_amount)}</td>
+        <td><span class="badge ${bMap[o.status]||'b-pending'}">${o.status}</span></td>
+        <td class="mono">${fmtDate(o.order_date)}</td>
+        <td>
+          <button class="btn btn-warn btn-xs" onclick="openAssign(${o.order_id})">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:11px;height:11px"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            Assign
+          </button>
+        </td>
+      </tr>`)
+      .join('')
+    : `<tr><td colspan="7" class="empty">No orders pending dispatch 🎉</td></tr>`;
+}
+
+// ─── ACTIVE RUNS ───
+function renderRuns() {
+  const runs = allOrders.filter(o => o.status === 'Shipped');
+  if (!runs.length) {
+    q('runs-list').innerHTML = `<div class="empty-state">
+      <svg fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      No active runs right now
+    </div>`;
+    return;
+  }
+  q('runs-list').innerHTML = runs.map((o, i) => {
+    const partner = allPartners.find(p => p.assigned_order === o.order_id) || allPartners[i % allPartners.length];
+    return `
+    <div class="run-card${i===0?' featured':''}">
+      ${i===0 ? '<div class="trail-dot"></div>' : ''}
+      ${i!==0 ? `<div class="cp tl">${PLUS}</div><div class="cp tr">${PLUS}</div><div class="cp bl">${PLUS}</div><div class="cp br">${PLUS}</div>` : ''}
+      <div class="run-head">
+        <span class="run-id">#${o.order_id}</span>
+        <span class="run-customer">${o.full_name || o.user_name || 'Customer'}</span>
+        <span class="badge b-shipped">In Transit</span>
+        <div class="run-actions">
+          <button class="btn btn-success btn-sm" onclick="markDelivered(${o.order_id})">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+            Mark Delivered
+          </button>
+        </div>
+      </div>
+      <!-- Route Progress -->
+      <div class="route-steps">
+        <div class="route-step">
+          <div class="step-dot done"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div>
+          <div class="step-label done">Placed</div>
+        </div>
+        <div class="route-step">
+          <div class="step-dot done"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div>
+          <div class="step-label done">Packed</div>
+        </div>
+        <div class="route-step">
+          <div class="step-dot active"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+          <div class="step-label active">Transit</div>
+        </div>
+        <div class="route-step">
+          <div class="step-dot"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+          <div class="step-label">Delivered</div>
+        </div>
+      </div>
+      <div class="run-meta">
+        <div class="run-meta-item">
+          <div class="run-meta-label">Partner</div>
+          <div class="run-meta-val">${partner?.name || '—'}</div>
+        </div>
+        <div class="run-meta-item">
+          <div class="run-meta-label">Order Value</div>
+          <div class="run-meta-val">${fmt(o.total_amount)}</div>
+        </div>
+        <div class="run-meta-item">
+          <div class="run-meta-label">Dispatch Date</div>
+          <div class="run-meta-val">${fmtDate(o.order_date)}</div>
+        </div>
+      </div>
+      <div class="run-items">
+        ${(o.items||[]).map(i=>`<span class="run-item-chip">${i.product_name||i.name} ×${i.quantity}</span>`).join('') || '<span style="color:var(--muted);font-size:12px;font-family:JetBrains Mono,monospace">No item details</span>'}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── HISTORY ───
+function renderHistory() {
+  const history = allOrders.filter(o => ['Delivered','Cancelled'].includes(o.status));
+  q('history-count').textContent = history.length + ' records';
+  const bMap = {Pending:'b-pending',Processing:'b-processing',Shipped:'b-shipped',Delivered:'b-delivered',Cancelled:'b-cancelled'};
+  q('history-tbody').innerHTML = history.length
+    ? history.map(o => `
+      <tr>
+        <td class="mono">#${o.order_id}</td>
+        <td class="fw">${o.full_name || o.user_name || 'Customer'}</td>
+        <td class="mono">${fmt(o.total_amount)}</td>
+        <td><span class="badge ${bMap[o.status]||'b-pending'}">${o.status}</span></td>
+        <td class="mono">${fmtDate(o.order_date)}</td>
+        <td>
+          <select class="status-sel" onchange="updateOrderStatus(${o.order_id}, this.value)">
+            <option value="">— change —</option>
+            <option value="Pending">Pending</option>
+            <option value="Processing">Processing</option>
+            <option value="Shipped">Shipped</option>
+            <option value="Delivered">Delivered</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </td>
+      </tr>`)
+      .join('')
+    : `<tr><td colspan="6" class="empty">No history yet</td></tr>`;
+}
+
+// ─── ASSIGN ───
+function openAssign(orderId) {
+  assigningOrderId = orderId;
+  q('assign-order-label').textContent = '#' + orderId;
+  const sel = q('assign-partner');
+  sel.innerHTML = '<option value="">— Select partner —</option>' +
+    allPartners.map(p => `<option value="${p.id}">${p.name} (${p.zone})</option>`).join('');
+  q('assign-modal').classList.add('open');
+}
+
+async function confirmAssign() {
+  const partnerId = q('assign-partner').value;
+  const status    = q('assign-status').value;
+  if (!partnerId) { showToast('Select a partner','err'); return; }
+
+  const r = await apiFetch(`/orders/${assigningOrderId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({status})
+  });
+  if (r) {
+    const idx = allOrders.findIndex(o => o.order_id === assigningOrderId);
+    if (idx !== -1) allOrders[idx].status = status;
+    const partner = allPartners.find(p => p.id === parseInt(partnerId));
+    if (partner) partner.assigned_order = assigningOrderId;
+    closeModal('assign-modal');
+    showToast('Order assigned to ' + (partner?.name || 'partner'));
+    renderDashboard(); renderRuns();
+  } else {
+    // demo fallback
+    const idx = allOrders.findIndex(o => o.order_id === assigningOrderId);
+    if (idx !== -1) allOrders[idx].status = status;
+    closeModal('assign-modal');
+    showToast('Assigned (demo mode)');
+    renderDashboard(); renderRuns();
+  }
+}
+
+// ─── UPDATE ORDER STATUS ───
+async function updateOrderStatus(orderId, newStatus) {
+  if (!newStatus) return;
+  const r = await apiFetch(`/orders/${orderId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({status: newStatus})
+  });
+  if (r) {
+    const idx = allOrders.findIndex(o => o.order_id === orderId);
+    if (idx !== -1) allOrders[idx].status = newStatus;
+    showToast('Status updated to ' + newStatus);
+    renderDashboard(); renderRuns(); renderHistory();
+  } else {
+    // demo fallback
+    const idx = allOrders.findIndex(o => o.order_id === orderId);
+    if (idx !== -1) allOrders[idx].status = newStatus;
+    showToast('Updated (demo)');
+    renderDashboard(); renderRuns(); renderHistory();
+  }
+}
+
+async function markDelivered(orderId) {
+  await updateOrderStatus(orderId, 'Delivered');
+}
+
+// ─── PARTNER STATUS ───
+function updateMyStatus(val) {
+  const name = localStorage.getItem('chainex_delivery_name') || 'Partner';
+  showToast('Status set to ' + val);
+}
+
+// ─── PARTNERS ───
+function renderPartners() {
+  if (!allPartners.length) {
+    q('partners-grid').innerHTML = `<div class="empty-state" style="grid-column:1/-1">No partners yet</div>`;
+    return;
+  }
+  q('partners-grid').innerHTML = allPartners.map((p, i) => `
+    <div class="partner-card" style="animation-delay:${.05+i*.05}s">
+      <div class="cp tl">${PLUS}</div><div class="cp tr">${PLUS}</div>
+      <div class="cp bl">${PLUS}</div><div class="cp br">${PLUS}</div>
+      <div class="partner-top">
+        <div class="partner-avatar">${p.name.slice(0,2).toUpperCase()}</div>
+        <div>
+          <div class="partner-name">${p.name}</div>
+          <div class="partner-id">ID: DLV-${String(p.id).padStart(3,'0')}</div>
+        </div>
+        <span class="badge ${p.status==='active'?'b-active':'b-offline'}" style="margin-left:auto">${p.status}</span>
+      </div>
+      <div class="partner-stats">
+        <div class="ps-item">
+          <div class="ps-label">Deliveries</div>
+          <div class="ps-val">${p.deliveries}</div>
+        </div>
+        <div class="ps-item">
+          <div class="ps-label">Rating</div>
+          <div class="ps-val">${p.rating}★</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted)">📍 ${p.zone}</span>
+        <button class="btn btn-danger btn-xs" onclick="removePartner(${p.id})">Remove</button>
+      </div>
+    </div>`).join('');
+}
+
+function openPartnerModal() { q('partner-modal').classList.add('open'); }
+
+function savePartner() {
+  const name  = q('pm-name').value.trim();
+  const email = q('pm-email').value.trim();
+  const phone = q('pm-phone').value.trim();
+  const zone  = q('pm-zone').value;
+  if (!name || !email) { showToast('Fill required fields','err'); return; }
+  const newPartner = {id: Date.now(), name, email, phone, zone, status:'offline', deliveries:0, rating:5.0};
+  allPartners.push(newPartner);
+  closeModal('partner-modal');
+  showToast('Partner added');
+  renderPartners();
+  q('pm-name').value = q('pm-email').value = q('pm-phone').value = '';
+}
+
+function removePartner(id) {
+  if (!confirm('Remove this partner?')) return;
+  allPartners = allPartners.filter(p => p.id !== id);
+  showToast('Partner removed');
+  renderPartners();
+}
+
+// ─── ZONES ───
+function renderZones() {
+  if (!allZones.length) {
+    q('zones-list').innerHTML = `<div style="text-align:center;color:var(--muted);padding:32px">No zones defined</div>`;
+    return;
+  }
+  q('zones-list').innerHTML = `
+  <table>
+    <thead><tr><th>#</th><th>Zone Name</th><th>Pincode Range</th><th>Partners</th><th>Avg Delivery Time</th><th></th></tr></thead>
+    <tbody>${allZones.map(z => `
+      <tr>
+        <td class="mono">${z.id}</td>
+        <td class="fw">${z.name}</td>
+        <td class="mono">${z.pincode}</td>
+        <td><span style="font-family:'JetBrains Mono',monospace;font-size:12px">${z.partners}</span></td>
+        <td class="mono">${z.avgTime}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="removeZone(${z.id})">Remove</button></td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+function openZoneModal() { q('zone-modal').classList.add('open'); }
+
+function saveZone() {
+  const name = q('zm-name').value.trim();
+  const pin  = q('zm-pin').value.trim();
+  if (!name) { showToast('Enter zone name','err'); return; }
+  allZones.push({id: allZones.length+1, name, pincode: pin||'—', partners:0, avgTime:'—'});
+  closeModal('zone-modal');
+  showToast('Zone added');
+  renderZones();
+  q('zm-name').value = q('zm-pin').value = '';
+}
+
+function removeZone(id) {
+  if (!confirm('Remove zone?')) return;
+  allZones = allZones.filter(z => z.id !== id);
+  showToast('Zone removed');
+  renderZones();
+}
+
+// ─── MOCK DATA ───
+const MOCK_ORDERS = [
+  {order_id:1001,full_name:'Ananya R',order_date:'2025-05-08T10:30:00Z',total_amount:840,status:'Pending',items:[{product_name:'Darjeeling FF',quantity:3}]},
+  {order_id:1002,full_name:'Rohit K',order_date:'2025-05-08T09:15:00Z',total_amount:320,status:'Shipped',items:[{product_name:'Nilgiri Green',quantity:2},{product_name:'Chamomile',quantity:1}]},
+  {order_id:1003,full_name:'Priya S',order_date:'2025-05-07T14:00:00Z',total_amount:1200,status:'Delivered',items:[{product_name:'Oolong Reserve',quantity:2},{product_name:'White Peony',quantity:1}]},
+  {order_id:1004,full_name:'Dev M',order_date:'2025-05-07T11:00:00Z',total_amount:560,status:'Processing',items:[{product_name:'Masala Chai',quantity:3},{product_name:'Assam Bold',quantity:1}]},
+  {order_id:1005,full_name:'Sana B',order_date:'2025-05-06T16:20:00Z',total_amount:480,status:'Cancelled',items:[{product_name:'Lemon Ginger',quantity:2}]},
+  {order_id:1006,full_name:'Aditya L',order_date:'2025-05-06T08:00:00Z',total_amount:1080,status:'Pending',items:[{product_name:'Darjeeling FF',quantity:2},{product_name:'White Peony',quantity:1}]},
+  {order_id:1007,full_name:'Riya P',order_date:'2025-05-05T12:00:00Z',total_amount:720,status:'Shipped',items:[{product_name:'Nilgiri Green',quantity:4}]},
+  {order_id:1008,full_name:'Karan V',order_date:'2025-05-05T09:00:00Z',total_amount:960,status:'Delivered',items:[{product_name:'Chamomile Blend',quantity:4}]},
+];
+
+const MOCK_PARTNERS = [
+  {id:1,name:'Ravi Kumar',email:'ravi@chainex.in',phone:'+91 9876543210',zone:'Mysuru Central',status:'active',deliveries:148,rating:4.9,assigned_order:1002},
+  {id:2,name:'Sunita Devi',email:'sunita@chainex.in',phone:'+91 9876500002',zone:'Jayanagar',status:'active',deliveries:97,rating:4.7,assigned_order:1007},
+  {id:3,name:'Manoj Patil',email:'manoj@chainex.in',phone:'+91 9876500003',zone:'Kuvempunagar',status:'offline',deliveries:64,rating:4.5,assigned_order:null},
+  {id:4,name:'Divya Nair',email:'divya@chainex.in',phone:'+91 9876500004',zone:'Vijayanagar',status:'active',deliveries:211,rating:5.0,assigned_order:null},
+  {id:5,name:'Arjun Rao',email:'arjun@chainex.in',phone:'+91 9876500005',zone:'Hebbal',status:'offline',deliveries:33,rating:4.6,assigned_order:null},
+];
+
+const MOCK_ZONES = [
+  {id:1,name:'Mysuru Central',pincode:'570001 – 570004',partners:2,avgTime:'45 min'},
+  {id:2,name:'Jayanagar',pincode:'570014 – 570016',partners:1,avgTime:'55 min'},
+  {id:3,name:'Kuvempunagar',pincode:'570023 – 570025',partners:1,avgTime:'60 min'},
+  {id:4,name:'Vijayanagar',pincode:'570017 – 570019',partners:1,avgTime:'50 min'},
+  {id:5,name:'Hebbal',pincode:'570027 – 570030',partners:1,avgTime:'70 min'},
+];
+
+// ─── INIT ───
+checkAuth();
+</script>
+</body>
+</html>
