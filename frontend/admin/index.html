@@ -9,14 +9,24 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:#09080607; --surface:#141210; --surface-2:#1c1916; --border:rgba(255,255,255,.09);
-  --border-h:rgba(255,255,255,.18); --accent:#c8923a; --accent-d:rgba(200,146,58,.15);
-  --text:#f4ede0; --muted:#6e6254; --sw:232px; --r:10px; --rs:6px;
-  --s-txt:#7ecf9a; --w-txt:#f0a84d; --d-txt:#e87878; --i-txt:#6ab4f0;
+  /* LIGHT THEME (Default) */
+  --bg: #f8f6f2; --surface: #ffffff; --surface-2: #f4f1eb; --border: rgba(0,0,0,0.06);
+  --border-h: rgba(0,0,0,0.12); --accent: #c8923a; --accent-d: rgba(200,146,58,0.08);
+  --text: #1a1815; --muted: #8a7b6a; --sw: 232px; --r: 10px; --rs: 6px;
+  --s-txt: #2d8a4e; --w-txt: #b36b00; --d-txt: #c23b3b; --i-txt: #1e6ec7;
+}
+
+body.dark-theme {
+  /* DARK THEME */
+  --bg: #0a0907; --surface: #141210; --surface-2: #1c1916; --border: rgba(255,255,255,0.09);
+  --border-h: rgba(255,255,255,0.18); --accent: #c8923a; --accent-d: rgba(200,146,58,0.15);
+  --text: #f4ede0; --muted: #8a7b6a; 
+  --s-txt: #7ecf9a; --w-txt: #f0a84d; --d-txt: #e87878; --i-txt: #6ab4f0;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{color-scheme:dark}
-body{background:#09080700;color:var(--text);font-family:'DM Sans',system-ui,sans-serif;font-size:14px;line-height:1.6;min-height:100vh;display:flex;background-color:#0a0907}
+html{color-scheme:light}
+html.dark-theme{color-scheme:dark}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;font-size:14px;line-height:1.6;min-height:100vh;display:flex;transition:background .2s, color .2s}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border-h);border-radius:4px}
@@ -42,7 +52,7 @@ body{background:#09080700;color:var(--text);font-family:'DM Sans',system-ui,sans
 
 /* MAIN */
 .main{margin-left:var(--sw);flex:1;min-height:100vh;display:flex;flex-direction:column}
-.topbar{height:54px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:10px;position:sticky;top:0;background:rgba(10,9,7,.88);backdrop-filter:blur(12px);z-index:5}
+.topbar{height:54px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:10px;position:sticky;top:0;background:var(--bg);backdrop-filter:blur(12px);z-index:5}
 .topbar-title{font-family:'Playfair Display',serif;font-size:14px;font-weight:500;color:var(--text)}
 .sep{width:1px;height:14px;background:var(--border);flex-shrink:0}
 .topbar-crumb{font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace}
@@ -126,9 +136,9 @@ tr:hover td{background:rgba(255,255,255,.02);transition:background .1s}
 .b-ok{background:rgba(126,207,154,.08);color:var(--s-txt);border-color:rgba(126,207,154,.15)}
 
 /* FORM / MODAL */
-.status-sel{appearance:none;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 8px;cursor:pointer}
+.status-sel{appearance:auto;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 8px;cursor:pointer}
 .status-sel:focus{outline:none;border-color:var(--accent)}
-.status-sel option{background:#1c1916}
+.status-sel option{background:var(--surface);color:var(--text)}
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center}
 .overlay.open{display:flex}
 .modal{background:var(--surface-2);border:1px solid var(--border-h);border-radius:14px;width:min(480px,92vw);padding:24px;animation:fadeUp .2s ease}
@@ -139,9 +149,9 @@ tr:hover td{background:rgba(255,255,255,.02);transition:background .1s}
 .fi{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 11px;transition:border-color .15s}
 .fi:focus{outline:none;border-color:var(--accent)}
 .fi::placeholder{color:var(--muted)}
-.fi-sel{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 11px;appearance:none;cursor:pointer}
+.fi-sel{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 11px;appearance:auto;cursor:pointer}
 .fi-sel:focus{outline:none;border-color:var(--accent)}
-.fi-sel option{background:#1c1916}
+.fi-sel option{background:var(--surface);color:var(--text)}
 .f-row{display:grid;grid-template-columns:1fr 1fr;gap:11px}
 .f-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
 
@@ -287,6 +297,9 @@ tr.clickable-row:hover{background:rgba(200,146,58,.06)}
     <span class="sep"></span>
     <span class="topbar-crumb" id="topbar-crumb">Dashboard</span>
     <div class="topbar-right">
+      <button class="btn btn-o btn-sm" onclick="toggleTheme()" title="Toggle Theme">
+        <svg id="theme-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m11.314 11.314l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z"/></svg>
+      </button>
       <button class="btn btn-o btn-sm" onclick="loadAll()">
         <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
         Refresh
@@ -534,7 +547,7 @@ tr.clickable-row:hover{background:rgba(200,146,58,.06)}
 // ─────────────────────────────────────────────
 // CONFIG  (PostgreSQL backend via REST API)
 // ─────────────────────────────────────────────
-const API  = 'http://localhost:4000/api';
+const API  = '/api';
 let token  = localStorage.getItem('chainex_admin_token') || '';
 let editingProductId = null;
 let editingSupplierId = null;
@@ -988,20 +1001,43 @@ const MOCK_SUPPLIERS = [
   {supplier_id:2,company_name:'Darjeeling Peaks',contact_email:'trade@dpco.in',phone_number:'+91 9876500001',bank_details:'SBI/98765'},
 ];
 const MOCK_PRODUCTS = [
-  {product_id:1,product_name:'Darjeeling FF',category_id:2,category_name:'Black Tea',supplier_id:2,company_name:'Darjeeling Peaks',price:280,stock_quantity:150},
-  {product_id:2,product_name:'Nilgiri Green',category_id:1,category_name:'Green Tea',supplier_id:1,company_name:'Nilgiri Estate',price:180,stock_quantity:8},
-  {product_id:3,product_name:'Chamomile Blend',category_id:3,category_name:'Herbal Tea',supplier_id:1,company_name:'Nilgiri Estate',price:240,stock_quantity:90},
-  {product_id:4,product_name:'Oolong Reserve',category_id:4,category_name:'Oolong Tea',supplier_id:2,company_name:'Darjeeling Peaks',price:420,stock_quantity:5},
-  {product_id:5,product_name:'Masala Chai Premium',category_id:2,category_name:'Black Tea',supplier_id:1,company_name:'Nilgiri Estate',price:160,stock_quantity:200},
-  {product_id:6,product_name:'White Peony',category_id:1,category_name:'Green Tea',supplier_id:2,company_name:'Darjeeling Peaks',price:520,stock_quantity:3},
+  {product_id:1,product_name:'Darjeeling FF',category_id:2,category_name:'Black Tea',supplier_id:2,company_name:'Darjeeling Peaks',price:280,stock_quantity:999},
+  {product_id:2,product_name:'Nilgiri Green',category_id:1,category_name:'Green Tea',supplier_id:1,company_name:'Nilgiri Estate',price:180,stock_quantity:999},
+  {product_id:3,product_name:'Chamomile Blend',category_id:3,category_name:'Herbal Tea',supplier_id:1,company_name:'Nilgiri Estate',price:240,stock_quantity:999},
+  {product_id:4,product_name:'Oolong Reserve',category_id:4,category_name:'Oolong Tea',supplier_id:2,company_name:'Darjeeling Peaks',price:420,stock_quantity:999},
+  {product_id:5,product_name:'Masala Chai Premium',category_id:2,category_name:'Black Tea',supplier_id:1,company_name:'Nilgiri Estate',price:160,stock_quantity:999},
+  {product_id:6,product_name:'White Peony',category_id:1,category_name:'Green Tea',supplier_id:2,company_name:'Darjeeling Peaks',price:520,stock_quantity:999},
 ];
 const MOCK_USERS = [
-  {user_id:1,full_name:'Ananya R',email:'ananya@example.com',created_at:'2025-04-01T00:00:00Z'},
+  {user_id:1,full_name:'Samarth R',email:'samarth_user@example.com',created_at:'2025-04-01T00:00:00Z'},
   {user_id:2,full_name:'Rohit K',email:'rohit@example.com',created_at:'2025-04-15T00:00:00Z'},
-  {user_id:3,full_name:'Priya S',email:'priya@example.com',created_at:'2025-04-20T00:00:00Z'},
+  {user_id:3,full_name:'Tanishq S',email:'tanishq@example.com',created_at:'2025-04-20T00:00:00Z'},
 ];
 
+// ─── THEME ───
+function initTheme() {
+  const t = localStorage.getItem('chainex_admin_theme') || 'light';
+  if (t === 'dark') document.body.classList.add('dark-theme'), document.documentElement.classList.add('dark-theme');
+  updateThemeIcon();
+}
+function toggleTheme() {
+  const isDark = document.body.classList.toggle('dark-theme');
+  document.documentElement.classList.toggle('dark-theme', isDark);
+  localStorage.setItem('chainex_admin_theme', isDark ? 'dark' : 'light');
+  updateThemeIcon();
+}
+function updateThemeIcon() {
+  const isDark = document.body.classList.contains('dark-theme');
+  const icon = q('theme-icon');
+  if (isDark) {
+    icon.innerHTML = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+  } else {
+    icon.innerHTML = '<path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m11.314 11.314l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>';
+  }
+}
+
 // ─── INIT ───
+initTheme();
 if (token) {
   // Already have a token from previous session
   document.getElementById('admin-login-overlay').classList.add('hidden');

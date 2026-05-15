@@ -8,16 +8,25 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#0a0907;--surface:#141210;--surface-2:#1c1916;--border:rgba(255,255,255,.09);
-  --border-h:rgba(255,255,255,.18);--accent:#c8923a;--accent-d:rgba(200,146,58,.15);
-  --text:#f4ede0;--muted:#6e6254;--r:12px;--rs:7px;
-  --s-txt:#7ecf9a;--w-txt:#f0a84d;--d-txt:#e87878;--i-txt:#6ab4f0;
-  --sw:232px;
+:root {
+  /* LIGHT THEME (Default) */
+  --bg: #f8f6f2; --surface: #ffffff; --surface-2: #f4f1eb; --border: rgba(0,0,0,0.06);
+  --border-h: rgba(0,0,0,0.12); --accent: #c8923a; --accent-d: rgba(200,146,58,0.08);
+  --text: #1a1815; --muted: #8a7b6a; --r: 12px; --rs: 7px; --sw: 232px;
+  --s-txt: #2d8a4e; --w-txt: #b36b00; --d-txt: #c23b3b; --i-txt: #1e6ec7;
+}
+
+body.dark-theme {
+  /* DARK THEME */
+  --bg: #0a0907; --surface: #141210; --surface-2: #1c1916; --border: rgba(255,255,255,0.09);
+  --border-h: rgba(255,255,255,0.18); --accent: #c8923a; --accent-d: rgba(200,146,58,0.15);
+  --text: #f4ede0; --muted: #8a7b6a; 
+  --s-txt: #7ecf9a; --w-txt: #f0a84d; --d-txt: #e87878; --i-txt: #6ab4f0;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{color-scheme:dark}
-body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;font-size:14px;line-height:1.6;min-height:100vh;display:flex}
+html{color-scheme:light}
+html.dark-theme{color-scheme:dark}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;font-size:14px;line-height:1.6;min-height:100vh;display:flex;transition:background .2s, color .2s}
 ::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border-h);border-radius:4px}
 
@@ -42,7 +51,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
 
 /* ── MAIN ── */
 .main{margin-left:var(--sw);flex:1;min-height:100vh;display:flex;flex-direction:column}
-.topbar{height:54px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:10px;position:sticky;top:0;background:rgba(10,9,7,.88);backdrop-filter:blur(12px);z-index:5}
+.topbar{height:54px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:10px;position:sticky;top:0;background:var(--bg);backdrop-filter:blur(12px);z-index:5}
 .topbar-title{font-family:'Playfair Display',serif;font-size:14px;font-weight:500;color:var(--text)}
 .sep{width:1px;height:14px;background:var(--border);flex-shrink:0}
 .topbar-crumb{font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace}
@@ -306,6 +315,9 @@ select.fi{appearance:none;cursor:pointer}
     <div class="sep"></div>
     <span class="topbar-crumb" id="topbar-crumb">Overview</span>
     <div class="topbar-right">
+      <button class="btn btn-o btn-sm" onclick="toggleTheme()" title="Toggle Theme">
+        <svg id="theme-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m11.314 11.314l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z"/></svg>
+      </button>
       <div id="status-toggle" style="display:flex;align-items:center;gap:8px">
         <span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted)">Status:</span>
         <select class="status-sel" id="my-status" onchange="updateMyStatus(this.value)">
@@ -538,12 +550,33 @@ select.fi{appearance:none;cursor:pointer}
 
 <script>
 // ─── CONFIG ───
-const API = 'http://localhost:4000/api';
+const API = '/api';
 let token = localStorage.getItem('chainex_delivery_token') || '';
 let allOrders = [];
 let allPartners = [];
 let allZones = [];
 let assigningOrderId = null;
+
+// ─── THEME ───
+function initTheme() {
+  const t = localStorage.getItem('chainex_delivery_theme') || 'light';
+  if (t === 'dark') document.body.classList.add('dark-theme'), document.documentElement.classList.add('dark-theme');
+  updateThemeIcon();
+}
+function toggleTheme() {
+  const isDark = document.body.classList.toggle('dark-theme');
+  document.documentElement.classList.toggle('dark-theme', isDark);
+  localStorage.setItem('chainex_delivery_theme', isDark ? 'dark' : 'light');
+  updateThemeIcon();
+}
+function updateThemeIcon() {
+  const isDark = document.body.classList.contains('dark-theme');
+  const icon = q('theme-icon');
+  if (icon) {
+    if (isDark) icon.innerHTML = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+    else icon.innerHTML = '<path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m11.314 11.314l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>';
+  }
+}
 
 const PLUS = `<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg>`;
 
@@ -950,9 +983,9 @@ function removeZone(id) {
 
 // ─── MOCK DATA ───
 const MOCK_ORDERS = [
-  {order_id:1001,full_name:'Ananya R',order_date:'2025-05-08T10:30:00Z',total_amount:840,status:'Pending',items:[{product_name:'Darjeeling FF',quantity:3}]},
+  {order_id:1001,full_name:'Samarth R',order_date:'2025-05-08T10:30:00Z',total_amount:840,status:'Pending',items:[{product_name:'Darjeeling FF',quantity:3}]},
   {order_id:1002,full_name:'Rohit K',order_date:'2025-05-08T09:15:00Z',total_amount:320,status:'Shipped',items:[{product_name:'Nilgiri Green',quantity:2},{product_name:'Chamomile',quantity:1}]},
-  {order_id:1003,full_name:'Priya S',order_date:'2025-05-07T14:00:00Z',total_amount:1200,status:'Delivered',items:[{product_name:'Oolong Reserve',quantity:2},{product_name:'White Peony',quantity:1}]},
+  {order_id:1003,full_name:'Tanishq S',order_date:'2025-05-07T14:00:00Z',total_amount:1200,status:'Delivered',items:[{product_name:'Oolong Reserve',quantity:2},{product_name:'White Peony',quantity:1}]},
   {order_id:1004,full_name:'Dev M',order_date:'2025-05-07T11:00:00Z',total_amount:560,status:'Processing',items:[{product_name:'Masala Chai',quantity:3},{product_name:'Assam Bold',quantity:1}]},
   {order_id:1005,full_name:'Sana B',order_date:'2025-05-06T16:20:00Z',total_amount:480,status:'Cancelled',items:[{product_name:'Lemon Ginger',quantity:2}]},
   {order_id:1006,full_name:'Aditya L',order_date:'2025-05-06T08:00:00Z',total_amount:1080,status:'Pending',items:[{product_name:'Darjeeling FF',quantity:2},{product_name:'White Peony',quantity:1}]},
@@ -977,6 +1010,7 @@ const MOCK_ZONES = [
 ];
 
 // ─── INIT ───
+initTheme();
 checkAuth();
 </script>
 </body>

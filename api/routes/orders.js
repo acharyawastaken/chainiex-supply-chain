@@ -2,6 +2,20 @@
 const router = require('express').Router();
 const db     = require('../db');
 const { validateOrderStatus } = require('../middleware/validate');
+const jwt    = require('jsonwebtoken');
+const SECRET = process.env.JWT_SECRET || 'replace_this_before_production';
+
+// Helper: try to extract user_id from JWT if present
+function getUserId(req) {
+  try {
+    const header = req.headers.authorization;
+    if (header && header.startsWith('Bearer ')) {
+      const decoded = jwt.verify(header.split(' ')[1], SECRET);
+      return decoded.id;
+    }
+  } catch {}
+  return req.body.user_id || null;
+}
 
 router.get('/', async (_req, res) => {
   try {
@@ -47,8 +61,16 @@ router.post('/', async (req, res) => {
   const client = await db.connect(); // get a client from pool for transaction
   try {
     const { items, total_amount } = req.body;
-    const user_id = req.body.user_id || 1;
+    const user_id = getUserId(req);
+    if (!user_id) { client.release(); return res.status(401).json({ success: false, error: 'Login required to place an order' }); }
     if (!items?.length) { client.release(); return res.status(400).json({ success: false, error: 'Need items' }); }
+
+    // Verify user still exists in DB (handles stale tokens after reseed)
+    const userCheck = await client.query('SELECT user_id FROM users WHERE user_id = $1', [user_id]);
+    if (!userCheck.rows.length) {
+      client.release();
+      return res.status(401).json({ success: false, error: 'Session expired. Please log out and log back in.' });
+    }
 
     await client.query('BEGIN');
 

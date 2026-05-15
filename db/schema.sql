@@ -57,6 +57,7 @@ CREATE TABLE products (
     description    TEXT,
     price          DECIMAL(10,2)  NOT NULL,
     stock_quantity INT            NOT NULL DEFAULT 0,
+    image_url      VARCHAR(500),
     FOREIGN KEY (supplier_id)  REFERENCES suppliers(supplier_id) ON DELETE RESTRICT,
     FOREIGN KEY (category_id)  REFERENCES categories(category_id) ON DELETE RESTRICT
 );
