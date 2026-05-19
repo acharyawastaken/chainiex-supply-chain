@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
 :root {
   /* LIGHT THEME (Default) */
@@ -203,7 +204,13 @@ tr:hover td{background:rgba(255,255,255,.02);transition:background .1s}
 tr.clickable-row{cursor:pointer;transition:background .15s}
 tr.clickable-row:hover{background:rgba(200,146,58,.06)}
 
-@media(max-width:1200px){.stats{grid-template-columns:repeat(2,1fr)}}
+/* ANALYTICS CHARTS */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:22px}
+.chart-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;animation:fadeUp .5s ease both}
+.chart-box.full{grid-column:1/-1}
+.chart-box-title{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px}
+.chart-box canvas{max-height:280px}
+@media(max-width:1200px){.stats{grid-template-columns:repeat(2,1fr)}.chart-grid{grid-template-columns:1fr}}
 /* ADMIN LOGIN SCREEN */
 .admin-login-overlay{position:fixed;inset:0;background:#0a0907;z-index:300;display:flex;align-items:center;justify-content:center}
 .admin-login-overlay.hidden{display:none}
@@ -277,6 +284,10 @@ tr.clickable-row:hover{background:rgba(200,146,58,.06)}
   <div class="nav-item" onclick="showView('categories',this)">
     <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M7 7h.01M7 12h.01M7 17h.01M11 7h6M11 12h6M11 17h6"/></svg>
     Categories
+  </div>
+  <div class="nav-item" onclick="showView('analytics',this)">
+    <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+    Analytics
   </div>
 
   <div class="sidebar-footer">
@@ -460,6 +471,27 @@ tr.clickable-row:hover{background:rgba(200,146,58,.06)}
       </div>
     </div>
 
+    <!-- ═══ ANALYTICS ═══ -->
+    <div class="view" id="view-analytics">
+      <div class="pg-head" style="display:flex;align-items:flex-end;justify-content:space-between">
+        <div>
+          <div class="pg-title">Supplier Analytics</div>
+          <div class="pg-sub">Real-time performance metrics across all suppliers</div>
+        </div>
+        <button class="btn btn-o btn-sm" onclick="loadAnalytics()">
+          <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+          Refresh Charts
+        </button>
+      </div>
+      <div class="chart-grid">
+        <div class="chart-box"><div class="chart-box-title">Revenue by Supplier</div><canvas id="chart-rev-supplier"></canvas></div>
+        <div class="chart-box"><div class="chart-box-title">Products by Category</div><canvas id="chart-prod-cat"></canvas></div>
+        <div class="chart-box"><div class="chart-box-title">Order Status Distribution</div><canvas id="chart-order-status"></canvas></div>
+        <div class="chart-box"><div class="chart-box-title">Stock Levels by Supplier</div><canvas id="chart-stock-supplier"></canvas></div>
+        <div class="chart-box full"><div class="chart-box-title">Monthly Revenue Trend</div><canvas id="chart-monthly-rev"></canvas></div>
+      </div>
+    </div>
+
   </div><!-- /content -->
 </main>
 
@@ -599,6 +631,7 @@ function showView(id, el) {
   if (id === 'suppliers') renderSuppliersTable(allSuppliers);
   if (id === 'users-v') renderUsersTable(allUsers);
   if (id === 'categories') renderCatsTable(allCategories);
+  if (id === 'analytics') loadAnalytics();
 }
 
 // ─── STAT CARD BUILDER ───
@@ -1052,6 +1085,110 @@ if (token) {
 
 // Allow Enter key to submit login
 document.getElementById('admin-pass').addEventListener('keydown', e => { if (e.key === 'Enter') adminLogin(); });
+
+// ─── ANALYTICS CHARTS ───
+let chartInstances = {};
+function destroyChart(id) { if (chartInstances[id]) { chartInstances[id].destroy(); delete chartInstances[id]; } }
+
+const CHART_COLORS = [
+  'rgba(200,146,58,0.85)',   // gold
+  'rgba(126,207,154,0.85)',  // green
+  'rgba(106,180,240,0.85)',  // blue
+  'rgba(232,120,120,0.85)',  // red
+  'rgba(183,156,239,0.85)',  // purple
+  'rgba(240,168,77,0.85)',   // orange
+  'rgba(110,180,180,0.85)',  // teal
+];
+const CHART_BORDERS = CHART_COLORS.map(c => c.replace('0.85','1'));
+
+function chartDefaults() {
+  const isDark = document.body.classList.contains('dark-theme');
+  return {
+    color: isDark ? '#8a7b6a' : '#8a7b6a',
+    borderColor: isDark ? 'rgba(255,255,255,0.09)' : 'rgba(0,0,0,0.06)',
+    font: { family: "'DM Sans', sans-serif" }
+  };
+}
+
+async function loadAnalytics() {
+  const data = await apiFetch('/admin/analytics');
+  if (!data) { showToast('Failed to load analytics', 'err'); return; }
+  const d = chartDefaults();
+
+  // 1. Revenue by Supplier — Bar
+  destroyChart('rev');
+  chartInstances['rev'] = new Chart(document.getElementById('chart-rev-supplier'), {
+    type: 'bar',
+    data: {
+      labels: data.revenueBySupplier.map(r => r.company_name.split(' ')[0]),
+      datasets: [{
+        label: 'Revenue (₹)',
+        data: data.revenueBySupplier.map(r => parseFloat(r.revenue)),
+        backgroundColor: CHART_COLORS,
+        borderColor: CHART_BORDERS,
+        borderWidth: 1, borderRadius: 6
+      }]
+    },
+    options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,grid:{color:d.borderColor},ticks:{color:d.color,font:d.font}},x:{grid:{display:false},ticks:{color:d.color,font:d.font}}} }
+  });
+
+  // 2. Products by Category — Doughnut
+  destroyChart('cat');
+  chartInstances['cat'] = new Chart(document.getElementById('chart-prod-cat'), {
+    type: 'doughnut',
+    data: {
+      labels: data.productsByCategory.map(r => r.category_name),
+      datasets: [{ data: data.productsByCategory.map(r => parseInt(r.count)), backgroundColor: CHART_COLORS, borderWidth:0 }]
+    },
+    options: { responsive:true, plugins:{legend:{position:'right',labels:{color:d.color,font:d.font,padding:12}}} }
+  });
+
+  // 3. Order Status — Pie
+  destroyChart('status');
+  const statusColors = {'Pending':'rgba(240,168,77,0.85)','Processing':'rgba(183,156,239,0.85)','Shipped':'rgba(106,180,240,0.85)','Delivered':'rgba(126,207,154,0.85)','Cancelled':'rgba(232,120,120,0.85)'};
+  chartInstances['status'] = new Chart(document.getElementById('chart-order-status'), {
+    type: 'pie',
+    data: {
+      labels: data.orderStatus.map(r => r.status),
+      datasets: [{ data: data.orderStatus.map(r => parseInt(r.count)), backgroundColor: data.orderStatus.map(r => statusColors[r.status] || CHART_COLORS[0]), borderWidth:0 }]
+    },
+    options: { responsive:true, plugins:{legend:{position:'right',labels:{color:d.color,font:d.font,padding:12}}} }
+  });
+
+  // 4. Stock by Supplier — Horizontal Bar
+  destroyChart('stock');
+  chartInstances['stock'] = new Chart(document.getElementById('chart-stock-supplier'), {
+    type: 'bar',
+    data: {
+      labels: data.stockBySupplier.map(r => r.company_name.split(' ')[0]),
+      datasets: [{
+        label: 'Total Stock Units',
+        data: data.stockBySupplier.map(r => parseInt(r.total_stock)),
+        backgroundColor: CHART_COLORS.slice().reverse(),
+        borderColor: CHART_BORDERS.slice().reverse(),
+        borderWidth:1, borderRadius:6
+      }]
+    },
+    options: { indexAxis:'y', responsive:true, plugins:{legend:{display:false}}, scales:{x:{beginAtZero:true,grid:{color:d.borderColor},ticks:{color:d.color,font:d.font}},y:{grid:{display:false},ticks:{color:d.color,font:d.font}}} }
+  });
+
+  // 5. Monthly Revenue — Line
+  destroyChart('monthly');
+  chartInstances['monthly'] = new Chart(document.getElementById('chart-monthly-rev'), {
+    type: 'line',
+    data: {
+      labels: data.monthlyRevenue.map(r => r.month),
+      datasets: [{
+        label: 'Revenue (₹)',
+        data: data.monthlyRevenue.map(r => parseFloat(r.revenue)),
+        borderColor: 'rgba(200,146,58,1)', backgroundColor: 'rgba(200,146,58,0.12)',
+        fill:true, tension:0.4, pointRadius:5, pointBackgroundColor:'rgba(200,146,58,1)',
+        pointBorderColor:'#fff', pointBorderWidth:2
+      }]
+    },
+    options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,grid:{color:d.borderColor},ticks:{color:d.color,font:d.font}},x:{grid:{color:d.borderColor},ticks:{color:d.color,font:d.font}}} }
+  });
+}
 </script>
 </body>
 </html>
