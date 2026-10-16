@@ -1,7 +1,7 @@
 // ─────────────────────────────────────────────
 // PostgreSQL Connection Pool (pg)
 // ─────────────────────────────────────────────
-require('dotenv').config({ path: '../.env' });
+require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 const { Pool } = require('pg');
 
 const pool = new Pool({

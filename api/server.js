@@ -1,7 +1,7 @@
 // ─────────────────────────────────────────────
 // ChaiNIEx API — Express Entry Point
 // ─────────────────────────────────────────────
-require('dotenv').config({ path: '../.env' });
+require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 const express = require('express');
 const cors    = require('cors');
 const path    = require('path');
@@ -60,7 +60,7 @@ app.use((err, _req, res, _next) => {
 });
 
 // ─── Start ───
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 ChaiNIEx API running on http://localhost:${PORT}`);
   console.log(`   Customer: http://localhost:${PORT}/`);
   console.log(`   Admin:    http://localhost:${PORT}/admin`);
