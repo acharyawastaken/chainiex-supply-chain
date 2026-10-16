@@ -60,4 +60,10 @@ chmod +x "$APP_DIR/deploy/backup-to-s3.sh"
 systemctl enable --now crond
 echo "0 2 * * * ec2-user $APP_DIR/deploy/backup-to-s3.sh >> /var/log/chainex-backup.log 2>&1" > /etc/cron.d/chainex-backup
 
+# 8. No load balancer → forward public port 80 to the app on 4000 (persists on reboot)
+dnf install -y iptables-services
+iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 4000
+service iptables save
+systemctl enable iptables
+
 echo "✅ ChaiNIEx setup complete"
